@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header Card -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 text-center mb-6 shadow-sm">
+    <h2 class="text-2xl font-bold text-slate-100 mb-1">📊 Category-wise Expense Analysis</h2>
+    <p class="text-sm text-slate-500">Visualize your spending patterns across different categories</p>
+  </div>
+
+  {% if expenses and expenses|length > 0 %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Chart Section -->
+    <div class="lg:col-span-2 bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm">
+      <h3 class="text-sm font-semibold text-slate-100 mb-4">Expense Distribution</h3>
+      <canvas id="categoryChart" height="80"></canvas>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm">
+      <h3 class="text-sm font-semibold text-slate-100 mb-4">📌 Category Breakdown</h3>
+      <div class="space-y-3">
+        {% for e in expenses %}
+        <div class="pb-3 {% if not loop.last %}border-b border-slate-700{% endif %}">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-semibold text-slate-100">{{ e['category'] }}</span>
+            <span class="text-sm font-bold text-slate-100">₹{{ "%.2f"|format(e['total']) }}</span>
+          </div>
+          <div class="h-2 bg-slate-700 rounded overflow-hidden">
+            {% set max_total = expenses|map(attribute='total')|max %}
+            <div class="h-full bg-cyan-500" style="width: {{ ((e['total'] / max_total) * 100) if max_total > 0 else 0 }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Table -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg shadow-sm mt-6 overflow-hidden">
+    <div class="p-6 border-b border-slate-700">
+      <h3 class="text-sm font-semibold text-slate-100">📋 Detailed Category Breakdown</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-800 border-b border-slate-700">
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Category</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Amount</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set total_amount = expenses|map(attribute='total')|sum %}
+          {% for e in expenses %}
+          <tr class="border-b border-slate-700 hover:bg-slate-800 transition-colors">
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 bg-slate-800 text-slate-300 text-xs font-semibold rounded">{{ e['category'] }}</span>
+            </td>
+            <td class="px-4 py-3"><strong class="text-slate-100">₹{{ "%.2f"|format(e['total']) }}</strong></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">{{ "%.1f"|format((e['total'] / total_amount) * 100) }}%</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-10 text-center shadow-sm">
+    <p class="text-4xl mb-3">📭</p>
+    <p class="text-slate-100 font-semibold mb-1">No category data yet</p>
+    <p class="text-slate-500 text-sm">Add transactions to generate category insights.</p>
+  </div>
+{% endif %}
+
+<!-- Chart.js -->
+{% if expenses and expenses|length > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx2 = document.getElementById('categoryChart').getContext('2d');
+    const categories = {{ expenses | map(attribute='category') | list | tojson }};
+    const totals = {{ expenses | map(attribute='total') | list | tojson }};
+
+    const colors = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6'];
+
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: categories,
+            datasets: [{
+                label: 'Category Expenses (₹)',
+                data: totals,
+                backgroundColor: colors.slice(0, categories.length),
+                borderColor: 'rgba(0, 0, 0, 0.9)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        color: '#D4D4D4',
+                        padding: 15,
+                        font: { size: 12, weight: 'bold' }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+
+<style>
+/* Animations */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+{% endblock %}

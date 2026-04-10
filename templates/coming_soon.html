@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen bg-gradient-hero text-slate-100">
+  <!-- Hero Section -->
+  <div class="relative overflow-hidden pt-20 pb-16 px-4">
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary from-0% via-transparent to-transparent rounded-full opacity-10 blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-accent via-transparent to-transparent rounded-full opacity-10 blur-3xl"></div>
+    </div>
+
+    <div class="max-w-6xl mx-auto relative z-10">
+      <!-- Main Title -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-2 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full px-4 py-2 mb-6">
+          <span class="flex h-2 w-2 rounded-full bg-accent"></span>
+          <span class="text-sm font-semibold text-accent">Coming Soon</span>
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent">
+          The Future of Expense Tracking
+        </h1>
+        
+        <p class="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-4">
+          Powered by Artificial Intelligence & Predictive Analytics
+        </p>
+        
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+          Experience next-generation expense management with intelligent insights, automated predictions, and smart recommendations
+        </p>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
+        <div class="group relative bg-gradient-to-br from-primary from-0% to-primary to-100% opacity-10 hover:opacity-20 border border-primary border-opacity-30 rounded-xl p-6 cursor-pointer transition-all duration-300 backdrop-blur-md">
+          <div class="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
+          <div class="relative">
+            <div class="text-3xl font-bold text-accent mb-2">7+</div>
+            <div class="text-slate-300">Revolutionary AI Features</div>
+          </div>
+        </div>
+        
+        <div class="group relative bg-gradient-to-br from-accent from-0% to-accent to-100% opacity-10 hover:opacity-20 border border-accent border-opacity-30 rounded-xl p-6 cursor-pointer transition-all duration-300 backdrop-blur-md">
+          <div class="absolute inset-0 bg-gradient-to-r from-accent to-success opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
+          <div class="relative">
+            <div class="text-3xl font-bold text-success mb-2">99.9%</div>
+            <div class="text-slate-300">Prediction Accuracy</div>
+          </div>
+        </div>
+        
+        <div class="group relative bg-gradient-to-br from-success from-0% to-success to-100% opacity-10 hover:opacity-20 border border-success border-opacity-30 rounded-xl p-6 cursor-pointer transition-all duration-300 backdrop-blur-md">
+          <div class="absolute inset-0 bg-gradient-to-r from-success to-primary opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
+          <div class="relative">
+            <div class="text-3xl font-bold text-accent mb-2">Q2 2026</div>
+            <div class="text-slate-300">Launch Date</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- AI Features Section -->
+  <div class="relative py-20 px-4">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-slate-100">
+        AI-Powered Features
+      </h2>
+      <p class="text-center text-slate-400 mb-16 max-w-2xl mx-auto">
+        Intelligent tools that learn from your spending patterns and help you make smarter financial decisions
+      </p>
+
+      <!-- Features Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- Feature: Smart Categorization -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-primary border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-primary from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">Smart Categorization</h3>
+            <p class="text-slate-400 mb-4">AI automatically categorizes your expenses with 99.5% accuracy. Learn from patterns and get instant suggestions.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Auto-categorize transactions</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Learn spending patterns</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Custom category rules</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature: Predictive Analytics -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-accent border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-accent from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-accent to-success rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="trending-up" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">Predictive Analytics</h3>
+            <p class="text-slate-400 mb-4">Forecast future expenses with machine learning. Get accurate predictions based on historical data and trends.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Monthly forecasts</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Trend analysis</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Budget alerts</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature: Smart Insights -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-success border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-success from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-success to-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="lightbulb" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">Smart Insights</h3>
+            <p class="text-slate-400 mb-4">Get AI-powered recommendations to optimize spending and find hidden savings opportunities.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Spending anomalies</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Savings tips</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Budget optimization</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature: Receipt OCR -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-primary border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-primary from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="scan" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">Receipt OCR</h3>
+            <p class="text-slate-400 mb-4">Simply photo receipts and let AI extract data instantly. No manual entry needed.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Receipt scanning</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Instant extraction</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Multi-language support</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature: AI Chat -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-accent border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-accent from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-accent to-success rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">AI Chat Assistant</h3>
+            <p class="text-slate-400 mb-4">Ask questions naturally. Get instant answers about your finances using conversational AI.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Natural queries</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Instant answers</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> 24/7 availability</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature: Fraud Detection -->
+        <div class="group relative bg-gradient-to-br from-white to-surface-light border border-success border-opacity-20 hover:border-opacity-60 rounded-xl p-8 transition-all duration-300 overflow-hidden shadow-sm">
+          <div class="absolute inset-0 bg-gradient-to-br from-success from-0% to-transparent to-100% opacity-0 group-hover:opacity-5 transition-opacity"></div>
+          <div class="relative z-10">
+            <div class="w-14 h-14 bg-gradient-to-br from-success to-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="alert-circle" class="w-7 h-7 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-slate-100">Fraud Detection</h3>
+            <p class="text-slate-400 mb-4">Advanced anomaly detection keeps your finances safe by identifying suspicious activities.</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Suspicious patterns</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Real-time alerts</li>
+              <li class="flex items-center gap-2"><span class="text-accent">✓</span> Security reports</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Predictions Showcase Section -->
+  <div class="relative py-20 px-4 bg-gradient-to-b from-transparent via-primary via-5% to-transparent">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-slate-100">
+        Predictive Insights
+      </h2>
+      <p class="text-center text-slate-400 mb-16 max-w-2xl mx-auto">
+        See what our AI can predict for your finances
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Prediction Card 1 -->
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-10 blur-xl group-hover:opacity-20 transition-opacity rounded-xl"></div>
+          <div class="relative bg-gradient-to-br from-white to-surface-light border border-primary border-opacity-30 rounded-xl p-8 shadow-sm">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+                <i data-lucide="pie-chart" class="w-6 h-6 text-white"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-100">Next Month Spending</h3>
+                <p class="text-sm text-slate-400">Based on 6-month history</p>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <div class="flex justify-between items-end mb-2">
+                <span class="text-slate-300">Predicted: $2,845</span>
+                <span class="text-accent text-sm font-semibold">±$120</span>
+              </div>
+              <div class="h-2 bg-surface-light rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-primary to-accent" style="width: 75%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-3 text-sm">
+              <p class="text-slate-300"><span class="text-accent">▲ 12%</span> increase from last month</p>
+              <p class="text-slate-400">Main drivers: Food (+18%), Transport (+8%)</p>
+              <p class="text-slate-400">Savings potential: <span class="text-success">$340</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prediction Card 2 -->
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-r from-accent to-success opacity-10 blur-xl group-hover:opacity-20 transition-opacity rounded-xl"></div>
+          <div class="relative bg-gradient-to-br from-white to-surface-light border border-accent border-opacity-30 rounded-xl p-8 shadow-sm">
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-12 h-12 bg-gradient-to-br from-accent to-success rounded-lg flex items-center justify-center">
+                <i data-lucide="target" class="w-6 h-6 text-white"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-100">Category Forecast</h3>
+                <p class="text-sm text-slate-400">Top spending predictions</p>
+              </div>
+            </div>
+
+            <div class="space-y-3 mb-6">
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-sm text-slate-400">Food & Dining</span>
+                  <span class="text-sm font-semibold text-accent">$890</span>
+                </div>
+                <div class="h-1.5 bg-surface-light rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-accent to-primary" style="width: 70%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-sm text-slate-400">Transport</span>
+                  <span class="text-sm font-semibold text-success">$445</span>
+                </div>
+                <div class="h-1.5 bg-surface-light rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-success to-accent" style="width: 35%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-sm text-slate-400">Entertainment</span>
+                  <span class="text-sm font-semibold text-primary">$620</span>
+                </div>
+                <div class="h-1.5 bg-surface-light rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-primary to-accent" style="width: 50%"></div>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-sm text-slate-400 p-3 bg-surface-light rounded-lg">
+              💡 <span class="text-accent">Tip:</span> Transport spending usually increases by 15% during Q2. Consider budget adjustment.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Features Timeline -->
+  <div class="relative py-20 px-4">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-center mb-4 text-slate-100">
+        Roadmap
+      </h2>
+      <p class="text-center text-slate-400 mb-16 max-w-2xl mx-auto">
+        Our development timeline for rolling out new features
+      </p>
+
+      <div class="space-y-6">
+        <!-- Timeline Item 1 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-accent"></div>
+            <div class="w-1 h-24 bg-gradient-to-b from-primary to-accent opacity-30 my-2"></div>
+          </div>
+          <div class="pb-6">
+            <div class="inline-block px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-sm text-primary font-semibold mb-2">
+              Q2 2026
+            </div>
+            <h3 class="text-2xl font-bold text-slate-100 mb-2">Launch AI Features Core</h3>
+            <p class="text-slate-400 mb-3">Smart categorization, basic predictions, and AI chat assistant</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">Auto-categorization</span>
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">Chat Interface</span>
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">Predictions v1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Item 2 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-accent to-success"></div>
+            <div class="w-1 h-24 bg-gradient-to-b from-accent to-success opacity-30 my-2"></div>
+          </div>
+          <div class="pb-6">
+            <div class="inline-block px-3 py-1 bg-accent bg-opacity-20 border border-accent border-opacity-30 rounded-full text-sm text-accent font-semibold mb-2">
+              Q3 2026
+            </div>
+            <h3 class="text-2xl font-bold text-slate-100 mb-2">Receipt OCR & Anomaly Detection</h3>
+            <p class="text-slate-400 mb-3">Advanced receipt scanning and fraud detection systems</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-accent bg-opacity-10 border border-accent border-opacity-30 rounded-full text-xs text-accent">Receipt Scanner</span>
+              <span class="px-3 py-1 bg-accent bg-opacity-10 border border-accent border-opacity-30 rounded-full text-xs text-accent">Fraud Detection</span>
+              <span class="px-3 py-1 bg-accent bg-opacity-10 border border-accent border-opacity-30 rounded-full text-xs text-accent">Security Suite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Item 3 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-success to-primary"></div>
+            <div class="w-1 h-24 bg-gradient-to-b from-success to-primary opacity-30 my-2"></div>
+          </div>
+          <div class="pb-6">
+            <div class="inline-block px-3 py-1 bg-success bg-opacity-20 border border-success border-opacity-30 rounded-full text-sm text-success font-semibold mb-2">
+              Q4 2026
+            </div>
+            <h3 class="text-2xl font-bold text-slate-100 mb-2">Advanced Analytics & Personal Finance AI</h3>
+            <p class="text-slate-400 mb-3">Deep learning models for investment recommendations and wealth building</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-success bg-opacity-10 border border-success border-opacity-30 rounded-full text-xs text-success">Investment AI</span>
+              <span class="px-3 py-1 bg-success bg-opacity-10 border border-success border-opacity-30 rounded-full text-xs text-success">Advanced Analytics</span>
+              <span class="px-3 py-1 bg-success bg-opacity-10 border border-success border-opacity-30 rounded-full text-xs text-success">Wealth Advisor</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Item 4 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-accent"></div>
+          </div>
+          <div class="pb-6">
+            <div class="inline-block px-3 py-1 bg-primary bg-opacity-20 border border-primary border-opacity-30 rounded-full text-sm text-primary font-semibold mb-2">
+              Q1 2027
+            </div>
+            <h3 class="text-2xl font-bold text-slate-100 mb-2">Mobile Apps & API Integration</h3>
+            <p class="text-slate-400 mb-3">Native iOS/Android apps with full AI capability and third-party integrations</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">iOS App</span>
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">Android App</span>
+              <span class="px-3 py-1 bg-primary bg-opacity-10 border border-primary border-opacity-30 rounded-full text-xs text-primary">Bank Integration</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="relative py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="relative group">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary via-accent to-success opacity-15 blur-2xl group-hover:opacity-25 transition-opacity rounded-2xl"></div>
+        
+        <div class="relative bg-gradient-to-br from-primary from-0% via-accent via-50% to-success to-100% p-1 rounded-2xl">
+          <div class="bg-gradient-to-br from-white to-surface-light rounded-2xl p-12 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-100 mb-4">
+              Ready for the Future?
+            </h2>
+            <p class="text-lg text-slate-300 mb-8">
+              Join thousands of users eagerly waiting for AI-powered expense tracking
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a href="/" class="px-8 py-3 bg-gradient-to-r from-primary to-accent rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:-translate-y-0.5">
+                Back to Dashboard
+              </a>
+              <button onclick="alert('Waitlist feature coming soon!')" class="px-8 py-3 border-2 border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-all duration-300">
+                Join Waitlist
+              </button>
+            </div>
+
+            <p class="text-sm text-slate-400 mt-8">
+              💌 Be the first to know when we launch. Updates coming to your email.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="border-t border-primary border-opacity-20 py-12 px-4 text-center text-slate-400">
+    <p class="mb-2">Powered by advanced machine learning and AI technology</p>
+    <p class="text-sm">Version Alpha • Q2 2026 Release • Follow us for updates</p>
+  </div>
+</div>
+
+{% endblock %}

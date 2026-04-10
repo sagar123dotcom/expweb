@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title if title else "Expense Tracker" }}</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#a78bfa',
+            'primary-dark': '#8b5cf6',
+            accent: '#06b6d4',
+            'accent-dark': '#0891b2',
+            success: '#4ade80',
+            'success-dark': '#22c55e',
+            danger: '#f87171',
+            'danger-dark': '#ef4444',
+            surface: '#1e293b',
+            'surface-light': '#293548',
+            'surface-lighter': '#334155',
+            'bg-primary': '#0f172a',
+            'text-primary': '#e2e8f0',
+            'text-secondary': '#94a3b8',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          backgroundImage: {
+            'gradient-primary': 'linear-gradient(135deg, #a78bfa, #06b6d4)',
+            'gradient-accent': 'linear-gradient(135deg, #06b6d4, #0891b2)',
+            'gradient-dark': 'linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%)',
+          },
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Theme CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-gradient-dark text-slate-200 font-sans antialiased">
+
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-700 px-4 py-4 shadow-lg sticky top-0 z-50 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity duration-200">
+        <div class="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-lg">
+          <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+        </div>
+        <span class="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ExpenseTracker</span>
+      </a>
+
+      <!-- Menu -->
+      <div class="flex items-center gap-4">
+        {% if session.username %}
+          <!-- User Avatar -->
+          <div class="flex items-center gap-3">
+            {% if session.picture %}
+              <img src="{{ session.picture }}" alt="Profile" referrerpolicy="no-referrer"
+                class="w-9 h-9 rounded-full border-2 border-primary border-opacity-50 object-cover">
+            {% else %}
+              <div class="w-9 h-9 rounded-full border-2 border-primary border-opacity-50 bg-primary bg-opacity-20 flex items-center justify-center">
+                <i data-lucide="user" class="w-5 h-5 text-primary"></i>
+              </div>
+            {% endif %}
+            <span class="text-slate-300 text-xs font-medium hidden sm:block max-w-[120px] truncate">{{ session.username }}</span>
+          </div>
+        {% endif %}
+        <div class="relative">
+          <button id="menuDropdown" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all duration-200">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+          </button>
+          <div id="menuContent" class="hidden absolute right-0 mt-1 w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-lg z-50 overflow-hidden">
+            {% if session.username %}
+              <a href="{{ url_for('index') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="home" class="w-4 h-4"></i> Home
+              </a>
+              <a href="{{ url_for('category_chart') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="pie-chart" class="w-4 h-4"></i> Category Chart
+              </a>
+              <a href="{{ url_for('monthly_trend') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> Monthly Trend
+              </a>
+              <a href="{{ url_for('payments') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Payments
+              </a>
+              <a href="{{ url_for('export_data') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="download" class="w-4 h-4"></i> Export
+              </a>
+              <a href="{{ url_for('import_data') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="upload" class="w-4 h-4"></i> Import
+              </a>
+              <hr class="border-slate-700 my-1">
+              <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-danger hover:bg-danger hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+              </a>
+            {% else %}
+              <a href="{{ url_for('login') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="log-in" class="w-4 h-4"></i> Login
+              </a>
+              <a href="{{ url_for('register') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Register
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  <div class="max-w-7xl mx-auto mt-3 px-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flex items-center gap-2 p-3 mb-2 rounded-lg border-l-4 text-sm
+            {% if cat == 'success' %}bg-success bg-opacity-10 border-success text-success
+            {% elif cat == 'danger' %}bg-danger bg-opacity-10 border-danger text-danger
+            {% elif cat == 'warning' %}bg-yellow-500 bg-opacity-10 border-yellow-500 text-yellow-400
+            {% else %}bg-accent bg-opacity-10 border-accent text-accent{% endif %}">
+            {% if cat == 'success' %}<i data-lucide="check-circle" class="w-4 h-4"></i>
+            {% elif cat == 'danger' %}<i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {% elif cat == 'warning' %}<i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            {% else %}<i data-lucide="info" class="w-4 h-4"></i>{% endif %}
+            <span class="flex-1">{{ msg }}</span>
+            <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-slate-400 transition-colors">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Content -->
+  <div class="max-w-7xl mx-auto px-4 py-4 mb-8 min-h-[80vh]">
+    {% block content %}{% endblock %}
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    // Menu dropdown toggle
+    const menuBtn = document.getElementById('menuDropdown');
+    const menuContent = document.getElementById('menuContent');
+    
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuContent.classList.toggle('hidden');
+    });
+    
+    document.addEventListener('click', () => {
+      menuContent.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

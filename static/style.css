@@ -1,0 +1,618 @@
+/* ================================================================
+   🌙 PREMIUM DARK THEME - ExpenseTracker SaaS
+   ================================================================ */
+
+:root {
+  /* ---- DARK THEME COLORS ---- */
+  --bg-primary: #0f172a;      /* Deep navy background */
+  --bg-secondary: #1e293b;    /* Card background */
+  --bg-tertiary: #293548;     /* Hover state */
+  --border-color: #334155;    /* Subtle borders */
+  --border-light: #475569;    /* Lighter borders */
+  
+  /* ---- TEXT COLORS ---- */
+  --text-primary: #e2e8f0;    /* Main text */
+  --text-secondary: #94a3b8;  /* Secondary text */
+  --text-disabled: #64748b;   /* Disabled text */
+  
+  /* ---- ACCENT COLORS ---- */
+  --accent-income: #4ade80;   /* Emerald green for income */
+  --accent-income-hover: #22c55e;
+  --accent-expense: #f87171;  /* Rose red for expenses */
+  --accent-expense-hover: #ef4444;
+  --accent-balance: #60a5fa;  /* Indigo blue for balance */
+  --accent-primary: #a78bfa;  /* Purple gradient start */
+  --accent-secondary: #06b6d4; /* Cyan gradient end */
+  
+  /* ---- SHADOWS & EFFECTS ---- */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(167, 139, 250, 0.3);
+  --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.3);
+  
+  /* ---- TRANSITIONS ---- */
+  --transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================================
+   GLOBAL STYLES
+   ================================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ================================================================
+   ANIMATIONS
+   ================================================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: var(--shadow-glow), 0 0 40px rgba(167, 139, 250, 0.2);
+  }
+  50% {
+    box-shadow: var(--shadow-glow), 0 0 60px rgba(167, 139, 250, 0.4);
+  }
+}
+
+@keyframes glowCyan {
+  0%, 100% {
+    box-shadow: var(--shadow-glow-cyan), 0 0 40px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: var(--shadow-glow-cyan), 0 0 60px rgba(6, 182, 212, 0.4);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   NAVBAR
+   ================================================================ */
+
+nav {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(41, 53, 72, 0.6) 50%, rgba(30, 41, 59, 0.8) 100%);
+  border-bottom: 1px solid var(--border-light);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 12px 20px;
+}
+
+/* ================================================================
+   CARDS & CONTAINERS
+   ================================================================ */
+
+.card, .form-card, .stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.card:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.card.glow-effect {
+  animation: glow 3s infinite;
+}
+
+/* ================================================================
+   STAT CARDS
+   ================================================================ */
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary), transparent);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 8px 0;
+  animation: countUp 0.6s ease-out;
+}
+
+.stat-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
+  animation: slideInLeft 1s ease-out;
+}
+
+.progress-bar-container {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #a78bfa 0%, #06b6d4 100%);
+  border-radius: 4px;
+  transition: width 0.6s ease-out;
+  box-shadow: 0 0 12px rgba(107, 114, 255, 0.5);
+}
+
+.progress-text {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-card.income .stat-bar-fill {
+  background: linear-gradient(90deg, var(--accent-income), #86efac);
+}
+
+.stat-card.expense .stat-bar-fill {
+  background: linear-gradient(90deg, var(--accent-expense), #fb7185);
+}
+
+.stat-card.balance .stat-bar-fill {
+  background: linear-gradient(90deg, var(--accent-balance), #93c5fd);
+}
+
+.stat-card:hover.income {
+  border-color: rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2), var(--shadow-md);
+}
+
+.stat-card:hover.expense {
+  border-color: rgba(248, 113, 113, 0.3);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.2), var(--shadow-md);
+}
+
+.stat-card:hover.balance {
+  border-color: rgba(96, 165, 250, 0.3);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.2), var(--shadow-md);
+}
+
+/* ================================================================
+   FORMS
+   ================================================================ */
+
+.form-card {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-disabled);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+
+button, .btn, input[type="button"], input[type="submit"] {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-glow), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-income {
+  background: linear-gradient(135deg, var(--accent-income), #86efac);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-income:hover {
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-expense {
+  background: linear-gradient(135deg, var(--accent-expense), #fb7185);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-expense:hover {
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.3), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* ================================================================
+   TABLES
+   ================================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table thead {
+  background: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-light);
+}
+
+table th {
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 12px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+table tbody tr:hover {
+  background: var(--bg-tertiary);
+}
+
+/* ================================================================
+   TRANSACTION ITEMS
+   ================================================================ */
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: var(--transition);
+  position: relative;
+}
+
+.transaction-item:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-md);
+  background: var(--bg-tertiary);
+  transform: translateX(4px);
+}
+
+.transaction-item.transaction-income {
+  border-left-color: var(--accent-income);
+}
+
+.transaction-item.transaction-income:hover {
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2), var(--shadow-md);
+}
+
+.transaction-item.transaction-expense {
+  border-left-color: var(--accent-expense);
+}
+
+.transaction-item.transaction-expense:hover {
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.2), var(--shadow-md);
+}
+
+.transaction-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.transaction-category-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.transaction-details {
+  min-width: 0;
+}
+
+.transaction-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0;
+}
+
+.transaction-category {
+  color: var(--text-disabled);
+  font-size: 12px;
+  margin: 4px 0 0 0;
+  text-transform: uppercase;
+}
+
+.transaction-right {
+  text-align: right;
+  margin-right: 40px;
+}
+
+.transaction-amount {
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0;
+}
+
+.income-amount {
+  color: var(--accent-income);
+}
+
+.expense-amount {
+  color: var(--accent-expense);
+}
+
+.transaction-date {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 4px 0 0 0;
+}
+
+.transaction-delete-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background: rgba(248, 113, 113, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: var(--accent-expense);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.transaction-item:hover .transaction-delete-btn {
+  opacity: 1;
+}
+
+.transaction-delete-btn:hover {
+  background: rgba(248, 113, 113, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ================================================================
+   ALERTS
+   ================================================================ */
+
+.alert {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border-left: 4px solid;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInDown 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.alert.success {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: var(--accent-income);
+  color: var(--accent-income);
+}
+
+.alert.danger {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--accent-expense);
+  color: var(--accent-expense);
+}
+
+.alert.warning {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.alert.info {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: var(--accent-balance);
+  color: var(--accent-balance);
+}
+
+/* ================================================================
+   RESPONSIVE DESIGN
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .card, .form-card, .stat-card {
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  button, .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .transaction-item {
+    flex-wrap: wrap;
+  }
+
+  .transaction-right {
+    margin-right: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  table th, table td {
+    padding: 10px 12px;
+  }
+}

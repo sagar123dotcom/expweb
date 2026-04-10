@@ -1,0 +1,559 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="dashboard-container space-y-4">
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 shadow-lg text-center">
+    <h2 class="text-3xl font-bold text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text mb-2">📊 Financial Dashboard</h2>
+    <p class="text-slate-400 text-sm">Track your income, expenses, and savings goals</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
+      <div class="stat-icon text-2xl mb-2">💰</div>
+      <p class="stat-label text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Income</p>
+      <p class="stat-value text-xl font-bold text-green-400 mt-1" id="total-income">₹{{ "%.2f"|format(total_income) }}</p>
+      <div class="stat-bar h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="stat-bar-fill h-full bg-gradient-to-r from-green-500 to-emerald-400"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
+      <div class="stat-icon text-2xl mb-2">📉</div>
+      <p class="stat-label text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Expense</p>
+      <p class="stat-value text-xl font-bold text-red-400 mt-1" id="total-expense">₹{{ "%.2f"|format(total_expense) }}</p>
+      <div class="stat-bar h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="stat-bar-fill h-full bg-gradient-to-r from-red-500 to-rose-400"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
+      <div class="stat-icon text-2xl mb-2">⚖️</div>
+      <p class="stat-label text-xs font-semibold text-slate-500 uppercase tracking-wide">Balance</p>
+      <p class="stat-value text-xl font-bold text-blue-400 mt-1" id="balance">₹{{ "%.2f"|format(balance) }}</p>
+      <div class="stat-bar h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="stat-bar-fill h-full bg-gradient-to-r from-blue-500 to-indigo-400"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
+      <div class="stat-icon text-2xl mb-2">🎯</div>
+      <p class="stat-label text-xs font-semibold text-slate-500 uppercase tracking-wide">Savings Goal</p>
+      <p class="stat-value text-xl font-bold text-purple-400 mt-1" id="goal-amount">₹{{ "%.2f"|format(goal) }}</p>
+      <div id="goal-progress" class="mt-3">
+        {% if goal > 0 %}
+        <div class="h-1 bg-slate-800 rounded overflow-hidden mb-1">
+          <div class="progress-bar h-full bg-gradient-to-r from-primary to-accent" style="width: {{ progress|round(1) }}%"></div>
+        </div>
+        <small class="progress-text text-xs text-slate-400">{{ progress|round(1) }}% reached</small>
+        {% else %}
+        <small class="progress-text text-xs text-slate-500">No goal set</small>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Add Expense Card -->
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-700 mb-3">
+        <h5 class="text-base font-semibold text-slate-100 m-0">➕ Add Expense</h5>
+        <span class="text-lg">📝</span>
+      </div>
+      <form id="expenseForm" class="space-y-2" onsubmit="return false;">
+        <div>
+          <input type="date" id="expenseDate" name="date" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" name="name" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Description" required>
+          <select name="category" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+            <option value="" class="bg-slate-800 text-slate-100">Category</option>
+            <option class="bg-slate-800 text-slate-100">Education</option><option class="bg-slate-800 text-slate-100">Healthcare</option><option class="bg-slate-800 text-slate-100">Entertainment</option>
+            <option class="bg-slate-800 text-slate-100">Utilities</option><option class="bg-slate-800 text-slate-100">Groceries</option><option class="bg-slate-800 text-slate-100">Transport</option>
+            <option class="bg-slate-800 text-slate-100">Miscellaneous</option><option class="bg-slate-800 text-slate-100">Income</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" name="amount" step="0.01" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Amount ₹" required>
+          <button type="button" onclick="addExpense(); return false;" class="px-3 py-2 bg-gradient-to-r from-success to-emerald-500 text-white font-medium rounded-lg text-sm hover:shadow-lg hover:from-emerald-500 hover:to-green-500 transition-all">Add</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-700 mb-3">
+        <h5 class="text-base font-semibold text-slate-100 m-0">⚡ Quick Actions</h5>
+        <span class="text-lg">✨</span>
+      </div>
+      <div class="space-y-3">
+        <div class="border-l-4 border-blue-500 bg-slate-800/40 p-3 rounded">
+          <label class="block text-xs font-semibold text-slate-300 mb-2">💵 Add Income</label>
+          <div class="flex gap-2">
+            <input type="number" id="incomeAmount" step="0.01" class="flex-1 px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Amount ₹">
+            <button type="button" onclick="addIncome(); return false;" class="px-3 py-2 bg-blue-600 text-white font-medium rounded-lg text-sm hover:bg-blue-700 transition-colors">Add</button>
+          </div>
+        </div>
+
+        <div class="border-l-4 border-purple-500 bg-slate-800/40 p-3 rounded">
+          <label class="block text-xs font-semibold text-slate-300 mb-2">🎯 Set Savings Goal</label>
+          <div class="flex gap-2">
+            <input type="number" id="goalAmount" step="0.01" class="flex-1 px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Goal ₹">
+            <button type="button" onclick="setGoal(); return false;" class="px-3 py-2 bg-purple-600 text-white font-medium rounded-lg text-sm hover:bg-purple-700 transition-colors">Set</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm">
+    <h5 class="text-base font-semibold text-slate-100 mb-3">🔍 Filter Transactions</h5>
+    <form id="filterForm" class="space-y-3" onsubmit="return false;">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
+        <input type="text" name="name" class="px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search by name" value="{{ filter_name }}">
+        
+        <select name="category" class="px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="">All Categories</option>
+          <option value="Education" {% if filter_category == "Education" %}selected{% endif %}>Education</option>
+          <option value="Healthcare" {% if filter_category=='Healthcare' %}selected{% endif %}>Healthcare</option>
+          <option value="Entertainment" {% if filter_category=='Entertainment' %}selected{% endif %}>Entertainment</option>
+          <option value="Utilities" {% if filter_category=='Utilities' %}selected{% endif %}>Utilities</option>
+          <option value="Groceries" {% if filter_category=='Groceries' %}selected{% endif %}>Groceries</option>
+          <option value="Transport" {% if filter_category=='Transport' %}selected{% endif %}>Transport</option>
+          <option value="Miscellaneous" {% if filter_category=='Miscellaneous' %}selected{% endif %}>Miscellaneous</option>
+          <option value="Income" {% if filter_category=='Income' %}selected{% endif %}>Income</option>
+        </select>
+        
+        <select name="month" class="px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="All">All Months</option>
+          {% for m in range(1,13) %}
+            <option value="{{m}}" {% if filter_month == m|string %}selected{% endif %}>Month {{m}}</option>
+          {% endfor %}
+        </select>
+        
+        <select name="year" class="px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="All">All Years</option>
+          {% for y in years %}
+            <option value="{{y}}" {% if filter_year==y %}selected{% endif %}>{{y}}</option>
+          {% endfor %}
+        </select>
+
+        <div class="flex gap-2">
+          <button type="button" onclick="applyFilter(); return false;" class="px-3 py-2 bg-blue-600 text-white font-medium rounded-lg text-sm hover:bg-blue-700 transition-colors w-full">Apply</button>
+          <button type="button" onclick="clearFilter(); return false;" class="px-3 py-2 bg-slate-700 text-slate-300 font-medium rounded-lg text-sm hover:bg-slate-700 transition-colors w-full">Clear</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Transactions Card -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm">
+    <h5 class="text-base font-semibold text-slate-100 mb-3">📋 Recent Transactions</h5>
+    
+    <!-- Transactions List -->
+    <div id="transactionsList" class="space-y-2">
+      {% for e in expenses %}
+        <div id="expense-{{ e.id }}" class="flex items-center justify-between p-3 border border-slate-700 rounded-lg hover:bg-slate-800 transition-all group relative {% if e.category|lower == 'income' %}border-l-4 border-l-emerald-500{% else %}border-l-4 border-l-blue-500{% endif %}">
+          <div class="flex items-center gap-3 flex-1">
+            <div class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+              {% if e.category|lower == 'income' %}
+                <span>💰</span>
+              {% elif e.category|lower == 'education' %}
+                <span>🎓</span>
+              {% elif e.category|lower == 'healthcare' %}
+                <span>🏥</span>
+              {% elif e.category|lower == 'entertainment' %}
+                <span>🎬</span>
+              {% elif e.category|lower == 'utilities' %}
+                <span>💡</span>
+              {% elif e.category|lower == 'groceries' %}
+                <span>🛒</span>
+              {% elif e.category|lower == 'transport' %}
+                <span>🚗</span>
+              {% else %}
+                <span>📌</span>
+              {% endif %}
+            </div>
+            <div>
+              <p class="font-medium text-sm text-slate-100 m-0">{{ e.name }}</p>
+              <p class="text-xs text-slate-500 uppercase tracking-wide m-0">{{ e.category }}</p>
+            </div>
+          </div>
+          <div class="text-right mr-10">
+            <p class="font-semibold text-sm m-0 {% if e.category|lower == 'income' %}text-emerald-600{% else %}text-red-600{% endif %}">
+              {% if e.category|lower == 'income' %}+{% else %}-{% endif %}₹{{ "%.2f"|format(e.amount) }}
+            </p>
+            <p class="text-xs text-slate-400 m-0">{{ e.date }}</p>
+          </div>
+          <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all" onclick="deleteExpense({{ e.id }}); return false;" title="Delete">×</button>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyMessage" {% if expenses|length > 0 %}style="display:none;"{% endif %} class="text-center py-8">
+      <p class="text-3xl mb-2">📭</p>
+      <p class="font-medium text-slate-100 m-0">No transactions yet</p>
+      <p class="text-sm text-slate-500">Start adding your first transaction to see it here</p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Smooth animations */
+@keyframes slideIn {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.stat-bar-fill, .progress-bar {
+  animation: slideIn 0.8s ease-out;
+}
+</style>
+
+{% endblock %}
+
+<script>
+async function addExpense() {
+  const form = document.getElementById('expenseForm');
+  const formData = new FormData(form);
+  
+  // Debug: Log form data
+  console.log('[ADD EXPENSE] Form submitted');
+  console.log('[ADD EXPENSE] Date:', formData.get('date'));
+  console.log('[ADD EXPENSE] Name:', formData.get('name'));
+  console.log('[ADD EXPENSE] Category:', formData.get('category'));
+  console.log('[ADD EXPENSE] Amount:', formData.get('amount'));
+  
+  try {
+    console.log('[ADD EXPENSE] Sending request to /add');
+    const response = await fetch('/add', { method: 'POST', body: formData });
+    
+    console.log('[ADD EXPENSE] Response status:', response.status);
+    console.log('[ADD EXPENSE] Response ok:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ADD EXPENSE] Response error:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('[ADD EXPENSE] Response data:', data);
+    
+    if (data.success) {
+      console.log('[ADD EXPENSE] ✅ Success:', data.message);
+      showAlert(data.message, 'success');
+      form.reset();
+      // Reset date to today
+      const todayDate = new Date().toISOString().split('T')[0];
+      document.getElementById('expenseDate').value = todayDate;
+      setTimeout(loadExpenses, 300);
+    } else {
+      console.error('[ADD EXPENSE] ❌ Error:', data.error);
+      showAlert(data.error || 'Error occurred', 'danger');
+    }
+  } catch (e) {
+    console.error('[ADD EXPENSE] ❌ Exception:', e.message);
+    console.error('[ADD EXPENSE] Stack:', e.stack);
+    showAlert('Error adding expense: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+async function addIncome() {
+  const amount = document.getElementById('incomeAmount').value;
+  
+  console.log('[ADD INCOME] Income amount:', amount);
+  
+  if (!amount) {
+    showAlert('Please enter an amount', 'warning');
+    return false;
+  }
+  
+  const formData = new FormData();
+  formData.append('income_amount', amount);
+  
+  try {
+    console.log('[ADD INCOME] Sending request to /add_income');
+    const response = await fetch('/add_income', { method: 'POST', body: formData });
+    
+    console.log('[ADD INCOME] Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ADD INCOME] Response error:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('[ADD INCOME] Response data:', data);
+    
+    if (data.success) {
+      console.log('[ADD INCOME] ✅ Success:', data.message);
+      showAlert(data.message, 'success');
+      document.getElementById('incomeAmount').value = '';
+      setTimeout(loadExpenses, 300);
+    } else {
+      console.error('[ADD INCOME] ❌ Error:', data.error);
+      showAlert(data.error || 'Error occurred', 'danger');
+    }
+  } catch (e) {
+    console.error('[ADD INCOME] ❌ Exception:', e.message);
+    showAlert('Error adding income: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+async function setGoal() {
+  const amount = document.getElementById('goalAmount').value;
+  
+  console.log('[SET GOAL] Goal amount:', amount);
+  
+  if (!amount) {
+    showAlert('Please enter a goal amount', 'warning');
+    return false;
+  }
+  
+  const formData = new FormData();
+  formData.append('goal_amount', amount);
+  
+  try {
+    console.log('[SET GOAL] Sending request to /set_goal');
+    const response = await fetch('/set_goal', { method: 'POST', body: formData });
+    
+    console.log('[SET GOAL] Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[SET GOAL] Response error:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('[SET GOAL] Response data:', data);
+    
+    if (data.success) {
+      console.log('[SET GOAL] ✅ Success:', data.message);
+      showAlert(data.message, 'success');
+      document.getElementById('goalAmount').value = '';
+      setTimeout(loadExpenses, 300);
+    } else {
+      console.error('[SET GOAL] ❌ Error:', data.error);
+      showAlert(data.error || 'Error occurred', 'danger');
+    }
+  } catch (e) {
+    console.error('[SET GOAL] ❌ Exception:', e.message);
+    showAlert('Error setting goal: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+async function deleteExpense(id) {
+  console.log('[DELETE] Expense ID:', id);
+  
+  if (!confirm('Are you sure you want to delete this transaction?')) {
+    console.log('[DELETE] User cancelled delete');
+    return false;
+  }
+  
+  try {
+    console.log('[DELETE] Sending request to /delete/' + id);
+    const response = await fetch('/delete/' + id, { method: 'POST' });
+    
+    console.log('[DELETE] Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[DELETE] Response error:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('[DELETE] Response data:', data);
+    
+    if (data.success) {
+      console.log('[DELETE] ✅ Success:', data.message);
+      showAlert(data.message, 'success');
+      const row = document.getElementById('expense-' + id);
+      if (row) {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(20px)';
+        setTimeout(() => row.style.display = 'none', 300);
+      }
+      setTimeout(loadExpenses, 300);
+    } else {
+      console.error('[DELETE] ❌ Error:', data.error);
+      showAlert(data.error || 'Error occurred', 'danger');
+    }
+  } catch (e) {
+    console.error('[DELETE] ❌ Exception:', e.message);
+    showAlert('Error deleting transaction: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+async function applyFilter() {
+  const form = document.getElementById('filterForm');
+  const formData = new FormData(form);
+  const params = new URLSearchParams(formData);
+  try {
+    await loadExpenses(params);
+  } catch (e) {
+    showAlert('Error applying filter: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+function clearFilter() {
+  document.getElementById('filterForm').reset();
+  try {
+    loadExpenses(new URLSearchParams());
+  } catch (e) {
+    showAlert('Error clearing filter: ' + e.message, 'danger');
+  }
+  return false;
+}
+
+async function loadExpenses(params = new URLSearchParams()) {
+  console.log('[LOAD EXPENSES] Loading with filters:', params.toString());
+  
+  try {
+    const url = '/get_expenses?' + params.toString();
+    console.log('[LOAD EXPENSES] Fetching from:', url);
+    
+    const response = await fetch(url);
+    console.log('[LOAD EXPENSES] Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[LOAD EXPENSES] Response error:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('[LOAD EXPENSES] Data received:', data);
+    
+    // Update stats
+    const totalIncome = parseFloat(data.total_income).toFixed(2);
+    const totalExpense = parseFloat(data.total_expense).toFixed(2);
+    const balance = parseFloat(data.balance).toFixed(2);
+    const goal = parseFloat(data.goal).toFixed(2);
+    
+    console.log(`[LOAD EXPENSES] Updated stats - Income: ₹${totalIncome}, Expense: ₹${totalExpense}, Balance: ₹${balance}`);
+    
+    document.getElementById('total-income').textContent = '₹' + totalIncome;
+    document.getElementById('total-expense').textContent = '₹' + totalExpense;
+    document.getElementById('balance').textContent = '₹' + balance;
+    document.getElementById('goal-amount').textContent = '₹' + goal;
+    
+    // Update goal progress
+    const goalProgressDiv = document.getElementById('goal-progress');
+    if (parseFloat(data.goal) > 0) {
+      const progress = parseFloat(data.progress).toFixed(1);
+      goalProgressDiv.innerHTML = `
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: ${progress}%"></div>
+        </div>
+        <small class="progress-text">${progress}% reached</small>
+      `;
+    } else {
+      goalProgressDiv.innerHTML = '<small class="progress-text">No goal set</small>';
+    }
+    
+    // Update transaction cards
+    const transactionsList = document.getElementById('transactionsList');
+    transactionsList.innerHTML = '';
+    
+    if (data.expenses && data.expenses.length > 0) {
+      console.log(`[LOAD EXPENSES] Rendering ${data.expenses.length} transactions`);
+      document.getElementById('emptyMessage').style.display = 'none';
+      
+      data.expenses.forEach((e, index) => {
+        const isIncome = e.category.toLowerCase() === 'income';
+        
+        // Category icons mapping
+        const iconMap = {
+          'income': '💰',
+          'education': '🎓',
+          'healthcare': '🏥',
+          'entertainment': '🎬',
+          'utilities': '💡',
+          'groceries': '🛒',
+          'transport': '🚗'
+        };
+        
+        const icon = iconMap[e.category.toLowerCase()] || '📌';
+        
+        const cardHTML = `
+          <div id="expense-${e.id}" class="transaction-item ${isIncome ? 'transaction-income' : 'transaction-expense'}">
+            <div class="transaction-left">
+              <div class="transaction-category-icon">
+                ${isIncome ? '<span class="icon-income">' + icon + '</span>' : '<span class="icon-category">' + icon + '</span>'}
+              </div>
+              <div class="transaction-details">
+                <p class="transaction-name">${e.name}</p>
+                <p class="transaction-category">${e.category}</p>
+              </div>
+            </div>
+            <div class="transaction-right">
+              <p class="transaction-amount ${isIncome ? 'income-amount' : 'expense-amount'}">
+                ${isIncome ? '+' : '-'}₹${parseFloat(e.amount).toFixed(2)}
+              </p>
+              <p class="transaction-date">${e.date}</p>
+            </div>
+            <button class="transaction-delete-btn" onclick="deleteExpense(${e.id}); return false;" title="Delete">×</button>
+          </div>
+        `;
+        transactionsList.innerHTML += cardHTML;
+      });
+    } else {
+      console.log('[LOAD EXPENSES] No expenses found, showing empty message');
+      document.getElementById('emptyMessage').style.display = 'block';
+    }
+  } catch (e) {
+    console.error('[LOAD EXPENSES] ❌ Exception:', e.message);
+    console.error('[LOAD EXPENSES] Stack:', e.stack);
+    showAlert('Error loading expenses: ' + e.message, 'danger');
+  }
+}
+
+function showAlert(message, type) {
+  const alertDiv = document.createElement('div');
+  const isSuccess = type === 'success';
+  const isDanger  = type === 'danger';
+  const isWarning = type === 'warning';
+  alertDiv.style.cssText = [
+    'display:flex;align-items:center;gap:12px;padding:14px 18px;margin-bottom:12px;',
+    'border-radius:12px;border-left:4px solid;box-shadow:0 4px 16px rgba(0,0,0,0.2);',
+    'animation:slideInDown 0.3s ease;',
+    isSuccess ? 'background:rgba(16,185,129,0.12);border-color:#10b981;color:#6ee7b7;'
+    : isDanger  ? 'background:rgba(239,68,68,0.12);border-color:#ef4444;color:#fca5a5;'
+    : isWarning ? 'background:rgba(251,191,36,0.12);border-color:#f59e0b;color:#fcd34d;'
+    :             'background:rgba(99,179,237,0.12);border-color:#63b3ed;color:#90cdf4;'
+  ].join('');
+  const icon = isSuccess ? '✓' : isDanger ? '✕' : isWarning ? '!' : 'i';
+  alertDiv.innerHTML = `
+    <span style="font-weight:700;font-size:1rem;">${icon}</span>
+    <span style="flex:1;font-size:0.95rem;">${message}</span>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:inherit;opacity:0.7;font-size:1.3rem;line-height:1;padding:0;">×</button>
+  `;
+  const container = document.querySelector('.dashboard-container');
+  if (container) container.insertBefore(alertDiv, container.firstChild);
+  setTimeout(() => alertDiv.remove(), 4000);
+}
+
+// Load expenses on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Set default date to today
+  const todayDate = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('expenseDate');
+  if (dateInput) {
+    dateInput.value = todayDate;
+  }
+  loadExpenses();
+});
+</script>

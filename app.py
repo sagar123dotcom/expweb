@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 from flask_cors import CORS
 import sqlite3, csv, io, os, secrets
+from urllib.parse import urlencode
 from datetime import datetime
 from collections import defaultdict
 from flask_bcrypt import Bcrypt
@@ -19,12 +20,38 @@ load_dotenv()
 app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 bcrypt = Bcrypt(app)
 
+# Session cookies must survive the Google redirect round-trip
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
 # Enable CORS for deployment
 CORS(app, supports_credentials=True)
 
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+
+
+def get_google_oauth_redirect_uri():
+    """
+    Must match EXACTLY what is registered in Google Cloud Console (Authorized redirect URIs).
+
+    Prefer OAUTH_REDIRECT_URI in .env when:
+    - You use both localhost and 127.0.0.1 (pick one URI and always use that URL in the browser)
+    - The app runs behind a reverse proxy and request.url_root is wrong → set full https callback URL
+
+    Otherwise we build from the current request origin so the redirect matches the address bar.
+    """
+    explicit = (os.getenv("OAUTH_REDIRECT_URI") or "").strip()
+    if explicit:
+        return explicit.rstrip("/")
+    base = (request.url_root or "").rstrip("/")
+    path = url_for("oauth2callback")
+    if not base:
+        return url_for("oauth2callback", _external=True, _scheme=request.scheme).rstrip("/")
+    if path.startswith("http"):
+        return path.rstrip("/")
+    return (base + path).rstrip("/")
 
 # ---------------------- DB Setup ----------------------
 def init_db():
@@ -113,66 +140,80 @@ def google_login():
     if not GOOGLE_CLIENT_ID:
         flash("Google OAuth is not configured. Please set GOOGLE_CLIENT_ID in .env", "warning")
         return redirect(url_for('login'))
-    
+    if not GOOGLE_CLIENT_SECRET:
+        flash("Google OAuth is not configured. Please set GOOGLE_CLIENT_SECRET in .env", "warning")
+        return redirect(url_for('login'))
+
     state = secrets.token_urlsafe(32)
-    session['oauth_state'] = state
-    
-    callback_uri = url_for('oauth2callback', _external=True)
-    google_auth_url = (
-        "https://accounts.google.com/o/oauth2/v2/auth?"
-        "client_id={}&"
-        "redirect_uri={}&"
-        "response_type=code&"
-        "scope=openid%20email%20profile&"
-        "state={}&"
-        "access_type=offline"
-    ).format(
-        GOOGLE_CLIENT_ID,
-        callback_uri,
-        state
-    )
+    session["oauth_state"] = state
+    session.modified = True
+
+    redirect_uri = get_google_oauth_redirect_uri()
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "access_type": "offline",
+        "prompt": "select_account",
+    }
+    google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
     return redirect(google_auth_url)
 
 @app.route('/oauth2callback')
 def oauth2callback():
     code = request.args.get('code')
     state = request.args.get('state')
-    
+    oauth_err = request.args.get("error")
+    oauth_err_desc = request.args.get("error_description")
+
+    if oauth_err:
+        flash(
+            f"Google sign-in was cancelled or denied: {oauth_err_desc or oauth_err}",
+            "danger",
+        )
+        return redirect(url_for("login"))
+
     if not state or state != session.get('oauth_state'):
-        flash("Invalid state parameter", "danger")
+        flash("Invalid state parameter (try signing in again).", "danger")
         return redirect(url_for('login'))
     
     if not code:
-        flash("Authorization failed", "danger")
+        flash("Authorization failed (no code returned).", "danger")
         return redirect(url_for('login'))
     
     try:
+        redirect_uri = get_google_oauth_redirect_uri()
         token_url = "https://oauth2.googleapis.com/token"
         data = {
             "client_id": GOOGLE_CLIENT_ID,
             "client_secret": GOOGLE_CLIENT_SECRET,
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": url_for('oauth2callback', _external=True),
+            "redirect_uri": redirect_uri,
         }
         
-        token_response = requests.post(token_url, data=data)
+        token_response = requests.post(token_url, data=data, timeout=30)
         token_data = token_response.json()
         
         if "access_token" not in token_data:
-            flash("Failed to obtain access token", "danger")
+            detail = token_data.get("error_description") or token_data.get("error") or token_response.text[:500]
+            flash(f"Failed to obtain access token from Google: {detail}", "danger")
             return redirect(url_for('login'))
         
         access_token = token_data["access_token"]
         
         userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
         headers = {"Authorization": f"Bearer {access_token}"}
-        userinfo_response = requests.get(userinfo_url, headers=headers)
+        userinfo_response = requests.get(userinfo_url, headers=headers, timeout=30)
         userinfo = userinfo_response.json()
         
         google_id = userinfo.get("id")
         email = userinfo.get("email")
-        name = userinfo.get("name", email.split("@")[0])
+        if not email:
+            flash("Google did not return an email for this account. Check OAuth consent screen scopes.", "danger")
+            return redirect(url_for("login"))
         picture = userinfo.get("picture")
         
         conn = get_db()

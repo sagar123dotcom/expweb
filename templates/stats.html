@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="space-y-6">
+  <!-- Header Section -->
+  <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 shadow-lg text-center">
+    <h2 class="text-3xl font-bold text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text mb-2">📊 Expense Statistics</h2>
+    <p class="text-slate-400 text-sm">Comprehensive overview of your financial data</p>
+  </div>
+
+  <!-- Key Statistics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-2xl">💰</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase">Total Income</span>
+      </div>
+      <p class="text-2xl font-bold text-green-400">₹{{ "%.2f"|format(total_income) }}</p>
+      <div class="h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-green-500 to-emerald-400" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-2xl">📉</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase">Total Expense</span>
+      </div>
+      <p class="text-2xl font-bold text-red-400">₹{{ "%.2f"|format(total_expense) }}</p>
+      <div class="h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-red-500 to-rose-400" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-2xl">⚖️</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase">Balance</span>
+      </div>
+      <p class="text-2xl font-bold text-blue-400">₹{{ "%.2f"|format(balance) }}</p>
+      <div class="h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-400" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-2xl">📊</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase">Avg Expense</span>
+      </div>
+      <p class="text-2xl font-bold text-purple-400">₹{{ "%.2f"|format(avg_expense) }}</p>
+      <div class="h-1 bg-slate-800 rounded mt-3 overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-purple-500 to-pink-400" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Category Breakdown Pie Chart -->
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <h3 class="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
+        <i data-lucide="pie-chart" class="w-5 h-5 text-primary"></i> Expenses by Category
+      </h3>
+      {% if categories %}
+        <canvas id="categoryChart" class="max-h-[300px]"></canvas>
+      {% else %}
+        <div class="flex items-center justify-center h-64 text-slate-500">
+          <p class="text-center">No expense data available</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Monthly Trend Line Chart -->
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+      <h3 class="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
+        <i data-lucide="trending-up" class="w-5 h-5 text-accent"></i> Monthly Trend
+      </h3>
+      {% if monthly_data %}
+        <canvas id="trendChart" class="max-h-[300px]"></canvas>
+      {% else %}
+        <div class="flex items-center justify-center h-64 text-slate-500">
+          <p class="text-center">No monthly data available</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Category Breakdown Table -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+    <h3 class="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
+      <i data-lucide="list" class="w-5 h-5 text-primary"></i> Category Breakdown
+    </h3>
+    {% if categories %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="border-b border-slate-700">
+            <tr class="text-left text-slate-400">
+              <th class="pb-3 font-semibold">Category</th>
+              <th class="pb-3 font-semibold text-right">Amount</th>
+              <th class="pb-3 font-semibold text-right">% of Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700">
+            {% set category_total = categories|sum(attribute='total') %}
+            {% for cat in categories %}
+            <tr class="hover:bg-slate-800 transition-colors">
+              <td class="py-3 text-slate-300">{{ cat['category']|title }}</td>
+              <td class="py-3 text-right font-semibold text-green-400">₹{{ "%.2f"|format(cat['total']) }}</td>
+              <td class="py-3 text-right text-slate-400">
+                {% if category_total > 0 %}
+                  {{ "%.1f"|format((cat['total']/category_total)*100) }}%
+                {% else %}
+                  0%
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+            <tr class="bg-slate-800 border-t border-slate-700">
+              <td class="py-3 font-semibold text-slate-200">Total</td>
+              <td class="py-3 text-right font-bold text-accent">₹{{ "%.2f"|format(category_total) }}</td>
+              <td class="py-3 text-right font-semibold text-accent">100%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-8 text-slate-500">
+        <p>No category data available yet. Start by adding some expenses!</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Top Expenses -->
+  <div class="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
+    <h3 class="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
+      <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i> Top 5 Expenses
+    </h3>
+    {% if top_expenses %}
+      <div class="space-y-3">
+        {% for expense in top_expenses %}
+        <div class="flex items-center justify-between p-3 bg-slate-800 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+          <div class="flex-1">
+            <p class="font-semibold text-slate-100">{{ expense['name'] }}</p>
+            <p class="text-xs text-slate-400">{{ expense['category']|title }} • {{ expense['date'] }}</p>
+          </div>
+          <p class="text-lg font-bold text-red-400 ml-4">₹{{ "%.2f"|format(expense['amount']) }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-8 text-slate-500">
+        <p>No expenses recorded yet</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+  // Category Chart
+  {% if categories %}
+  const categoryCtx = document.getElementById('categoryChart');
+  if (categoryCtx) {
+    new Chart(categoryCtx, {
+      type: 'doughnut',
+      data: {
+        labels: [{% for cat in categories %}'{{ cat["category"]|title }}'{{ "," if not loop.last }}{% endfor %}],
+        datasets: [{
+          data: [{% for cat in categories %}{{ cat['total'] }}{{ "," if not loop.last }}{% endfor %}],
+          backgroundColor: [
+            '#a78bfa', '#06b6d4', '#4ade80', '#f87171', '#fbbf24',
+            '#8b5cf6', '#0891b2', '#22c55e', '#ef4444', '#f59e0b'
+          ],
+          borderColor: '#1e293b',
+          borderWidth: 2,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              font: { size: 12, weight: 500 },
+              padding: 15,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#e2e8f0',
+            bodyColor: '#cbd5e1',
+            borderColor: '#475569',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 6,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                return '₹' + context.parsed.toFixed(2);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  {% endif %}
+
+  // Monthly Trend Chart
+  {% if monthly_data %}
+  const trendCtx = document.getElementById('trendChart');
+  if (trendCtx) {
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: [{% for month in monthly_data %}'{{ month["month"] }}'{{ "," if not loop.last }}{% endfor %}],
+        datasets: [{
+          label: 'Monthly Expenses',
+          data: [{% for month in monthly_data %}{{ month['total'] }}{{ "," if not loop.last }}{% endfor %}],
+          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#06b6d4',
+          pointBorderColor: '#1e293b',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: '#a78bfa'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#cbd5e1',
+              font: { size: 12, weight: 500 },
+              padding: 15,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#e2e8f0',
+            bodyColor: '#cbd5e1',
+            borderColor: '#475569',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 6,
+            callbacks: {
+              label: function(context) {
+                return 'Expenses: ₹' + context.parsed.y.toFixed(2);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#94a3b8',
+              font: { size: 11 },
+              callback: function(value) {
+                return '₹' + value.toFixed(0);
+              }
+            },
+            grid: {
+              color: '#334155',
+              drawBorder: false
+            }
+          },
+          x: {
+            ticks: {
+              color: '#94a3b8',
+              font: { size: 11 }
+            },
+            grid: {
+              display: false,
+              drawBorder: false
+            }
+          }
+        }
+      }
+    });
+  }
+  {% endif %}
+
+  // Initialize Lucide Icons
+  lucide.createIcons();
+</script>
+
+{% endblock %}

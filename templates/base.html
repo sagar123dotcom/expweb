@@ -86,20 +86,11 @@
               <a href="{{ url_for('index') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
                 <i data-lucide="home" class="w-4 h-4"></i> Home
               </a>
-              <a href="{{ url_for('category_chart') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
-                <i data-lucide="pie-chart" class="w-4 h-4"></i> Category Chart
-              </a>
-              <a href="{{ url_for('monthly_trend') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
-                <i data-lucide="trending-up" class="w-4 h-4"></i> Monthly Trend
-              </a>
-              <a href="{{ url_for('payments') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
-                <i data-lucide="credit-card" class="w-4 h-4"></i> Payments
+              <a href="{{ url_for('stats') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Statistics
               </a>
               <a href="{{ url_for('export_data') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
                 <i data-lucide="download" class="w-4 h-4"></i> Export
-              </a>
-              <a href="{{ url_for('import_data') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-primary hover:text-white hover:bg-opacity-20 transition-colors">
-                <i data-lucide="upload" class="w-4 h-4"></i> Import
               </a>
               <hr class="border-slate-700 my-1">
               <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-danger hover:bg-danger hover:text-white hover:bg-opacity-20 transition-colors">

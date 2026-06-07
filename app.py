@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 from flask_cors import CORS
-import sqlite3, csv, io, os, secrets
+import sqlite3, io, os, secrets
 from urllib.parse import urlencode
 from datetime import datetime
 from collections import defaultdict
@@ -629,221 +629,63 @@ def export_data():
         download_name=f'expenses_{datetime.now().strftime("%Y%m%d")}.xlsx'
     )
 
-# ---------------------- Import from Excel ----------------------
-@app.route('/import', methods=['GET', 'POST'])
-def import_data():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        file = request.files['file']
-        if not file:
-            flash("No file selected!", "danger")
-            return redirect(url_for('import_data'))
-
-        try:
-            if file.filename.endswith('.xlsx'):
-                df = pd.read_excel(file)
-            elif file.filename.endswith('.csv'):
-                df = pd.read_csv(file)
-            else:
-                flash("Please upload an Excel (.xlsx) or CSV file", "danger")
-                return redirect(url_for('import_data'))
-            
-            required_columns = ['Date', 'Name', 'Category', 'Amount']
-            if not all(col in df.columns for col in required_columns):
-                flash(f"File must contain columns: {', '.join(required_columns)}", "danger")
-                return redirect(url_for('import_data'))
-            
-            conn = get_db()
-            imported_count = 0
-            
-            for _, row in df.iterrows():
-                try:
-                    date = row['Date']
-                    name = row['Name']
-                    category = row['Category']
-                    amount = float(row['Amount'])
-                    
-                    datetime.strptime(str(date), '%Y-%m-%d')
-                    
-                    conn.execute(
-                        "INSERT INTO expenses (user_id, date, name, category, amount) VALUES (?, ?, ?, ?, ?)",
-                        (session['user_id'], date, name, category, amount)
-                    )
-                    imported_count += 1
-                except (ValueError, IndexError):
-                    continue
-            
-            conn.commit()
-            conn.close()
-            
-            if imported_count > 0:
-                flash(f"Successfully imported {imported_count} expense(s)!", "success")
-            else:
-                flash("No valid expense data found in file.", "warning")
-            return redirect(url_for('index'))
-        
-        except Exception as e:
-            flash(f"Error reading file: {str(e)}", "danger")
-            return redirect(url_for('import_data'))
-
-    return render_template('import_csv.html')
-
-@app.route('/category-chart')
-def category_chart():
+# ---------------------- Comprehensive Stats Page ----------------------
+@app.route('/stats')
+def stats():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
     conn = get_db()
-    expenses = conn.execute(
-        "SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category",
+    
+    # Category breakdown
+    categories = conn.execute(
+        "SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? AND LOWER(category) != 'income' GROUP BY category ORDER BY total DESC",
         (session['user_id'],)
     ).fetchall()
-    conn.close()
-
-    return render_template('category_chart.html', expenses=expenses)
-
-
-@app.route('/monthly-trend')
-def monthly_trend():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    conn = get_db()
-    expenses = conn.execute(
+    
+    # Monthly trend
+    monthly_data = conn.execute(
         "SELECT strftime('%Y-%m', date) as month, SUM(amount) as total "
-        "FROM expenses WHERE user_id = ? GROUP BY month ORDER BY month ASC",
+        "FROM expenses WHERE user_id = ? AND LOWER(category) != 'income' GROUP BY month ORDER BY month ASC",
         (session['user_id'],)
     ).fetchall()
+    
+    # Overall statistics
+    total_income = sum(e['amount'] for e in conn.execute(
+        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) = 'income'",
+        (session['user_id'],)
+    ))
+    total_expense = sum(e['amount'] for e in conn.execute(
+        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) != 'income'",
+        (session['user_id'],)
+    ))
+    balance = total_income - total_expense
+    
+    # Get top 5 expenses
+    top_expenses = conn.execute(
+        "SELECT name, category, amount, date FROM expenses WHERE user_id = ? AND LOWER(category) != 'income' ORDER BY amount DESC LIMIT 5",
+        (session['user_id'],)
+    ).fetchall()
+    
+    # Calculate average expense
+    all_expenses = conn.execute(
+        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) != 'income'",
+        (session['user_id'],)
+    ).fetchall()
+    avg_expense = (total_expense / len(all_expenses)) if all_expenses else 0
+    
     conn.close()
-
-    return render_template('monthly_trend.html', expenses=expenses)
-
-# --------------------------
-# Payments System
-# --------------------------
-
-PAYMENTS_FILE = "payments.csv"
-
-def init_payments_file():
-    if not os.path.exists(PAYMENTS_FILE):
-        with open(PAYMENTS_FILE, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Date", "Customer", "Amount", "Method", "Notes"])
-
-def load_payments():
-    init_payments_file()
-    with open(PAYMENTS_FILE, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        return list(reader)
-
-def save_payment(date, customer, amount, method, notes):
-    with open(PAYMENTS_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([date, customer, amount, method, notes])
-
-def overwrite_payments(rows):
-    with open(PAYMENTS_FILE, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["Date", "Customer", "Amount", "Method", "Notes"])
-        writer.writerows(rows)
-
-@app.route("/payments", methods=["GET", "POST"])
-def payments():
-    init_payments_file()
-
-    if request.method == "POST":
-        date = request.form.get("date") or datetime.now().strftime("%Y-%m-%d")
-        customer = request.form["customer"]
-        amount = request.form["amount"]
-        method = request.form["method"]
-        notes = request.form.get("notes", "")
-        save_payment(date, customer, amount, method, notes)
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.best == 'application/json':
-            return jsonify({"success": True, "message": "Payment added successfully"})
-        
-        return redirect(url_for("payments"))
-
-    data = load_payments()
-
-    total = 0.0
-    for p in data:
-        try:
-            total += float(p["Amount"])
-        except:
-            continue
-
-    method_totals = {}
-    for p in data:
-        method = p["Method"]
-        try:
-            amt = float(p["Amount"])
-        except:
-            continue
-        method_totals[method] = method_totals.get(method, 0) + amt
-
-    labels = list(method_totals.keys())
-    values = list(method_totals.values())
-
-    return render_template("payments.html", payments=data, total=total,
-                           labels=labels, values=values)
-
-@app.route("/get_payments", methods=["GET"])
-def get_payments():
-    data = load_payments()
     
-    total = 0.0
-    for p in data:
-        try:
-            total += float(p["Amount"])
-        except:
-            continue
-
-    method_totals = {}
-    for p in data:
-        method = p["Method"]
-        try:
-            amt = float(p["Amount"])
-        except:
-            continue
-        method_totals[method] = method_totals.get(method, 0) + amt
-
-    labels = list(method_totals.keys())
-    values = list(method_totals.values())
-    
-    payments_data = []
-    for p in data:
-        payments_data.append({
-            "Date": p["Date"],
-            "Customer": p["Customer"],
-            "Amount": float(p["Amount"]),
-            "Method": p["Method"],
-            "Notes": p["Notes"]
-        })
-    
-    return jsonify({
-        "payments": payments_data,
-        "total": total,
-        "labels": labels,
-        "values": values
-    })
-
-@app.route("/delete_payment", methods=["POST"])
-def delete_payment():
-    idx = int(request.form["index"])
-    payments = load_payments()
-    rows = [
-        [p["Date"], p["Customer"], p["Amount"], p["Method"], p["Notes"]]
-        for i, p in enumerate(payments) if i != idx
-    ]
-    overwrite_payments(rows)
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.accept_mimetypes.best == 'application/json':
-        return jsonify({"success": True, "message": "Payment deleted successfully"})
-    
-    return redirect(url_for("payments"))
+    return render_template(
+        'stats.html',
+        categories=categories,
+        monthly_data=monthly_data,
+        total_income=total_income,
+        total_expense=total_expense,
+        balance=balance,
+        avg_expense=avg_expense,
+        top_expenses=top_expenses
+    )
 
 
 # --------------------------

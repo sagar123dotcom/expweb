@@ -83,14 +83,13 @@ def init_db():
         except sqlite3.OperationalError:
             pass  # Column already exists — safe to ignore
     conn.commit()
+    from db.migrations import run_feature_migrations
+    run_feature_migrations(conn)
     conn.close()
 
 init_db()
 
-def get_db():
-    conn = sqlite3.connect("expenses.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+from db.connection import get_db
 
 # ---------------------- Auth Routes ----------------------
 @app.route('/register', methods=['GET', 'POST'])
@@ -691,5 +690,8 @@ def stats():
 # --------------------------
 # Run App
 # --------------------------
+from routes.api import api_bp
+app.register_blueprint(api_bp)
+
 if __name__ == "__main__":
     app.run(debug=True)

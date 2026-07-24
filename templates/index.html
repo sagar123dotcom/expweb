@@ -54,6 +54,8 @@
     </div>
   </div>
 
+  {% include 'partials/planning_section.html' %}
+
   <!-- Quick Actions Section -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <!-- Add Expense Card -->
@@ -517,6 +519,9 @@ async function loadExpenses(params = new URLSearchParams()) {
     console.error('[LOAD EXPENSES] Stack:', e.stack);
     showAlert('Error loading expenses: ' + e.message, 'danger');
   }
+  if (typeof loadPlanningDashboard === 'function') {
+    loadPlanningDashboard();
+  }
 }
 
 function showAlert(message, type) {
@@ -555,4 +560,5 @@ document.addEventListener('DOMContentLoaded', function() {
   loadExpenses();
 });
 </script>
+<script src="{{ url_for('static', filename='js/planning.js') }}"></script>
 {% endblock %}

@@ -189,6 +189,7 @@
               {% if e.category|lower == 'income' %}+{% else %}-{% endif %}₹{{ "%.2f"|format(e.amount) }}
             </p>
             <p class="text-xs text-slate-400 m-0">{{ e.date }}</p>
+            <p class="transaction-balance">Bal: ₹{{ "%.2f"|format(e.running_balance) }}</p>
           </div>
           <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all" onclick="deleteExpense({{ e.id }}); return false;" title="Delete">×</button>
         </div>
@@ -504,6 +505,7 @@ async function loadExpenses(params = new URLSearchParams()) {
                 ${isIncome ? '+' : '-'}₹${parseFloat(e.amount).toFixed(2)}
               </p>
               <p class="transaction-date">${e.date}</p>
+              <p class="transaction-balance">Bal: ₹${parseFloat(e.running_balance).toFixed(2)}</p>
             </div>
             <button class="transaction-delete-btn" onclick="deleteExpense(${e.id}); return false;" title="Delete">×</button>
           </div>

@@ -282,6 +282,26 @@ def index():
 
     expenses = conn.execute(query, params).fetchall()
 
+    all_transactions = conn.execute(
+        "SELECT id, category, amount FROM expenses WHERE user_id = ? ORDER BY date ASC, id ASC",
+        (session['user_id'],)
+    ).fetchall()
+
+    running_balance_by_id = {}
+    running_total = 0.0
+    for transaction in all_transactions:
+        amount = float(transaction['amount'] or 0)
+        category = (transaction['category'] or '').strip()
+        if category.lower() == "income":
+            running_total += amount
+        else:
+            running_total -= amount
+        running_balance_by_id[transaction['id']] = running_total
+
+    expenses_list = [dict(e) for e in expenses]
+    for expense in expenses_list:
+        expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
+
     total_income = sum(e['amount'] for e in conn.execute(
         "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) = 'income'",
         (session['user_id'],)
@@ -305,7 +325,7 @@ def index():
 
     return render_template(
         'index.html',
-        expenses=expenses,
+        expenses=expenses_list,
         total_income=total_income,
         total_expense=total_expense,
         balance=balance,
@@ -505,6 +525,26 @@ def get_expenses():
         query += " LIMIT 5"
     
     expenses = conn.execute(query, params).fetchall()
+
+    all_transactions = conn.execute(
+        "SELECT id, category, amount FROM expenses WHERE user_id = ? ORDER BY date ASC, id ASC",
+        (session['user_id'],)
+    ).fetchall()
+
+    running_balance_by_id = {}
+    running_total = 0.0
+    for transaction in all_transactions:
+        amount = float(transaction['amount'] or 0)
+        category = (transaction['category'] or '').strip()
+        if category.lower() == "income":
+            running_total += amount
+        else:
+            running_total -= amount
+        running_balance_by_id[transaction['id']] = running_total
+
+    expenses_list = [dict(e) for e in expenses]
+    for expense in expenses_list:
+        expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
     
     total_income = sum(e['amount'] for e in conn.execute(
         "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) = 'income'",
@@ -523,7 +563,7 @@ def get_expenses():
     conn.close()
     
     return jsonify({
-        "expenses": [dict(e) for e in expenses],
+        "expenses": expenses_list,
         "total_income": total_income,
         "total_expense": total_expense,
         "balance": balance,

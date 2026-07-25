@@ -513,6 +513,13 @@ table tbody tr:hover {
   margin: 4px 0 0 0;
 }
 
+.transaction-balance {
+  color: var(--accent-balance);
+  font-size: 11px;
+  margin: 2px 0 0 0;
+  font-weight: 500;
+}
+
 .transaction-delete-btn {
   position: absolute;
   right: 8px;

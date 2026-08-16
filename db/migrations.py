@@ -1,6 +1,8 @@
 """Database migrations for needs, personal goals, and user preferences."""
 
 FEATURE_MIGRATIONS = [
+    """ALTER TABLE expenses ADD COLUMN time TEXT NOT NULL DEFAULT '00:00'""",
+    """UPDATE expenses SET time = '00:00' WHERE time IS NULL OR trim(time) = ''""",
     """CREATE TABLE IF NOT EXISTS needs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -36,6 +38,27 @@ FEATURE_MIGRATIONS = [
 
 def run_feature_migrations(conn):
     cursor = conn.cursor()
+    try:
+        columns = [row[1] for row in cursor.execute("PRAGMA table_info(expenses)").fetchall()]
+    except sqlite3.DatabaseError:
+        columns = []
+
+    if 'time' not in columns:
+        try:
+            cursor.execute("ALTER TABLE expenses ADD COLUMN time TEXT NOT NULL DEFAULT '00:00'")
+        except sqlite3.OperationalError:
+            pass
+
+    try:
+        cursor.execute("UPDATE expenses SET time = '00:00' WHERE time IS NULL OR trim(time) = ''")
+    except sqlite3.DatabaseError:
+        pass
+
     for sql in FEATURE_MIGRATIONS:
-        cursor.execute(sql)
+        if 'ALTER TABLE expenses ADD COLUMN time' in sql:
+            continue
+        try:
+            cursor.execute(sql)
+        except sqlite3.OperationalError:
+            pass
     conn.commit()

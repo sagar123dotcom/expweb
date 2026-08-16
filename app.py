@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 from flask_cors import CORS
-import sqlite3, io, os, secrets
+import sqlite3, io, os, secrets, re
 from urllib.parse import urlencode
 from datetime import datetime
 from collections import defaultdict
@@ -10,20 +10,15 @@ import requests
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
-
 app = Flask(__name__)
-
 # Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
-
 app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 bcrypt = Bcrypt(app)
-
 # Session cookies must survive the Google redirect round-trip
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
-
 # Enable CORS for deployment
 CORS(app, supports_credentials=True)
 
@@ -53,6 +48,64 @@ def get_google_oauth_redirect_uri():
         return path.rstrip("/")
     return (base + path).rstrip("/")
 
+
+def validate_expense_date(value):
+    if not value or not isinstance(value, str):
+        return False
+    value = value.strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return False
+    try:
+        datetime.strptime(value, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
+def normalize_expense_time(value):
+    if value is None:
+        return "00:00"
+    value = str(value).strip()
+    if not value:
+        return "00:00"
+    if not re.fullmatch(r"\d{2}:\d{2}", value):
+        return "00:00"
+    try:
+        hour, minute = value.split(":")
+        hour_int = int(hour)
+        minute_int = int(minute)
+        if not (0 <= hour_int <= 23 and 0 <= minute_int <= 59):
+            return "00:00"
+        return f"{hour_int:02d}:{minute_int:02d}"
+    except ValueError:
+        return "00:00"
+
+
+def validate_expense_time(value):
+    if value is None:
+        return False
+    value = str(value).strip()
+    if not re.fullmatch(r"\d{2}:\d{2}", value):
+        return False
+    hour, minute = value.split(":")
+    return 0 <= int(hour) <= 23 and 0 <= int(minute) <= 59
+
+
+def format_transaction_datetime(date_value, time_value):
+    date_value = (date_value or "").strip()
+    time_value = normalize_expense_time(time_value)
+    if not date_value:
+        return "--"
+    try:
+        dt = datetime.strptime(f"{date_value} {time_value}", "%Y-%m-%d %H:%M")
+        return dt.strftime("%a, %d %b %Y · %H:%M")
+    except ValueError:
+        return date_value
+
+
+def transaction_order_sql(direction="DESC"):
+    return f"ORDER BY date {direction}, COALESCE(time, '00:00') {direction}, id {direction}"
+
 # ---------------------- DB Setup ----------------------
 def init_db():
     conn = sqlite3.connect("expenses.db")
@@ -67,6 +120,7 @@ def init_db():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER,
                     date TEXT,
+                    time TEXT NOT NULL DEFAULT '00:00',
                     name TEXT,
                     category TEXT,
                     amount REAL)""")
@@ -77,11 +131,13 @@ def init_db():
     for migration in [
         "ALTER TABLE users ADD COLUMN google_id TEXT",
         "ALTER TABLE users ADD COLUMN picture TEXT",
+        "ALTER TABLE expenses ADD COLUMN time TEXT DEFAULT '00:00'",
     ]:
         try:
             c.execute(migration)
         except sqlite3.OperationalError:
             pass  # Column already exists — safe to ignore
+    c.execute("UPDATE expenses SET time = '00:00' WHERE time IS NULL OR trim(time) = ''")
     conn.commit()
     from db.migrations import run_feature_migrations
     run_feature_migrations(conn)
@@ -275,7 +331,7 @@ def index():
         query += " AND LOWER(name) LIKE ?"
         params.append(f"%{filter_name.lower()}%")
 
-    query += " ORDER BY date DESC"
+    query += " ORDER BY date DESC, COALESCE(time, '00:00') DESC"
 
     if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name):
         query += " LIMIT 5"
@@ -283,7 +339,7 @@ def index():
     expenses = conn.execute(query, params).fetchall()
 
     all_transactions = conn.execute(
-        "SELECT id, category, amount FROM expenses WHERE user_id = ? ORDER BY date ASC, id ASC",
+        "SELECT id, category, amount, time, date FROM expenses WHERE user_id = ? ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
         (session['user_id'],)
     ).fetchall()
 
@@ -300,6 +356,8 @@ def index():
 
     expenses_list = [dict(e) for e in expenses]
     for expense in expenses_list:
+        expense['time'] = normalize_expense_time(expense.get('time'))
+        expense['display_datetime'] = format_transaction_datetime(expense.get('date'), expense.get('time'))
         expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
 
     total_income = sum(e['amount'] for e in conn.execute(
@@ -349,6 +407,8 @@ def add():
     try:
         # Extract and validate form data
         date = request.form.get('date', '').strip()
+        time_value_raw = request.form.get('time', '')
+        time_value = (time_value_raw or '').strip()
         name = request.form.get('name', '').strip()
         category = request.form.get('category', '').strip()
         amount_str = request.form.get('amount', '').strip()
@@ -357,6 +417,20 @@ def add():
         if not date:
             print(f"[ADD EXPENSE] ❌ Missing date")
             return jsonify({"error": "Date is required", "success": False}), 400
+
+        if not time_value:
+            print(f"[ADD EXPENSE] ❌ Missing time")
+            return jsonify({"error": "Time is required", "success": False}), 400
+        
+        if not validate_expense_date(date):
+            print(f"[ADD EXPENSE] ❌ Invalid date format: {date}")
+            return jsonify({"error": "Date must be in YYYY-MM-DD format", "success": False}), 400
+
+        if not validate_expense_time(time_value):
+            print(f"[ADD EXPENSE] ❌ Invalid time format: {time_value}")
+            return jsonify({"error": "Time must be in HH:mm format using 24-hour time", "success": False}), 400
+
+        time_value = normalize_expense_time(time_value)
         
         if not name:
             print(f"[ADD EXPENSE] ❌ Missing name")
@@ -379,25 +453,16 @@ def add():
             print(f"[ADD EXPENSE] ❌ Invalid amount format: {amount_str}")
             return jsonify({"error": "Amount must be a valid number", "success": False}), 400
         
-        # Validate date format
-        try:
-            datetime.strptime(date, "%Y-%m-%d")
-        except ValueError:
-            print(f"[ADD EXPENSE] ❌ Invalid date format: {date}")
-            return jsonify({"error": "Date must be in YYYY-MM-DD format", "success": False}), 400
-        
-        # Insert into database
         conn = get_db()
         c = conn.cursor()
-        c.execute("INSERT INTO expenses (user_id, date, name, category, amount) VALUES (?, ?, ?, ?, ?)",
-                  (session['user_id'], date, name, category, amount))
+        c.execute("INSERT INTO expenses (user_id, date, time, name, category, amount) VALUES (?, ?, ?, ?, ?, ?)",
+                  (session['user_id'], date, time_value, name, category, amount))
         conn.commit()
         
-        # Get the inserted expense ID
         expense_id = c.lastrowid
         conn.close()
         
-        print(f"[ADD EXPENSE] ✅ Success - User {session['user_id']}: {name} ({category}) ₹{amount:.2f} on {date}")
+        print(f"[ADD EXPENSE] ✅ Success - User {session['user_id']}: {name} ({category}) ₹{amount:.2f} on {date} at {time_value}")
         return jsonify({
             "success": True,
             "message": f"✅ {name} added! ₹{amount:.2f}",
@@ -432,11 +497,12 @@ def add_income():
             return jsonify({"error": "Amount must be a valid number", "success": False}), 400
         
         today = datetime.now().strftime("%Y-%m-%d")
+        current_time = datetime.now().strftime("%H:%M")
         
         conn = get_db()
         c = conn.cursor()
-        c.execute("INSERT INTO expenses (user_id, date, name, category, amount) VALUES (?, ?, ?, ?, ?)",
-                  (session['user_id'], today, "Income", "Income", amount))
+        c.execute("INSERT INTO expenses (user_id, date, time, name, category, amount) VALUES (?, ?, ?, ?, ?, ?)",
+                  (session['user_id'], today, current_time, "Income", "Income", amount))
         conn.commit()
         conn.close()
         
@@ -519,7 +585,7 @@ def get_expenses():
         query += " AND LOWER(name) LIKE ?"
         params.append(f"%{filter_name.lower()}%")
     
-    query += " ORDER BY date DESC"
+    query += " ORDER BY date DESC, COALESCE(time, '00:00') DESC"
     
     if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name):
         query += " LIMIT 5"
@@ -527,7 +593,7 @@ def get_expenses():
     expenses = conn.execute(query, params).fetchall()
 
     all_transactions = conn.execute(
-        "SELECT id, category, amount FROM expenses WHERE user_id = ? ORDER BY date ASC, id ASC",
+        "SELECT id, category, amount, time, date FROM expenses WHERE user_id = ? ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
         (session['user_id'],)
     ).fetchall()
 
@@ -544,6 +610,8 @@ def get_expenses():
 
     expenses_list = [dict(e) for e in expenses]
     for expense in expenses_list:
+        expense['time'] = normalize_expense_time(expense.get('time'))
+        expense['display_datetime'] = format_transaction_datetime(expense.get('date'), expense.get('time'))
         expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
     
     total_income = sum(e['amount'] for e in conn.execute(
@@ -610,57 +678,90 @@ def export_data():
         return redirect(url_for('login'))
 
     conn = get_db()
-    expenses = conn.execute("SELECT date, name, category, amount FROM expenses WHERE user_id = ? ORDER BY date DESC", 
-                          (session['user_id'],)).fetchall()
+    rows = conn.execute(
+        "SELECT date, time, name, category, amount FROM expenses WHERE user_id = ? ORDER BY date DESC, COALESCE(time, '00:00') DESC, id DESC",
+        (session['user_id'],),
+    ).fetchall()
     conn.close()
 
-    df = pd.DataFrame(expenses, columns=['Date', 'Name', 'Category', 'Amount'])
-    
-    # Create Excel workbook with formatting
+    export_rows = []
+    for row in rows:
+        raw_date = (row['date'] or '').strip()
+        raw_time = normalize_expense_time(row['time'])
+        date_obj = None
+        time_obj = None
+        day_name = ""
+        if raw_date:
+            try:
+                date_obj = datetime.strptime(raw_date, "%Y-%m-%d").date()
+                day_name = datetime.strptime(raw_date, "%Y-%m-%d").strftime("%A")
+            except ValueError:
+                date_obj = None
+                day_name = ""
+        if raw_time:
+            try:
+                hour, minute = map(int, raw_time.split(":"))
+                time_obj = datetime.strptime(raw_time, "%H:%M").time()
+            except ValueError:
+                time_obj = None
+        export_rows.append({
+            'Date': date_obj,
+            'Day': day_name,
+            'Time': time_obj,
+            'Name': row['name'] or '',
+            'Category': row['category'] or '',
+            'Amount': float(row['amount']) if row['amount'] is not None else 0.0,
+        })
+
+    df = pd.DataFrame(export_rows, columns=['Date', 'Day', 'Time', 'Name', 'Category', 'Amount'])
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Expenses"
-    
+
     header_font = Font(bold=True, color="FFFFFF", size=12)
     header_fill = PatternFill(start_color="4A90E2", end_color="4A90E2", fill_type="solid")
     header_alignment = Alignment(horizontal="center", vertical="center")
-    
     thin_border = Border(
         left=Side(style='thin'),
         right=Side(style='thin'),
         top=Side(style='thin'),
         bottom=Side(style='thin')
     )
-    
+
     for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 1):
         for c_idx, value in enumerate(row, 1):
             cell = ws.cell(row=r_idx, column=c_idx, value=value)
             cell.border = thin_border
-            
+
             if r_idx == 1:
                 cell.font = header_font
                 cell.fill = header_fill
                 cell.alignment = header_alignment
             else:
-                if c_idx == 4:
+                if c_idx == 1:
+                    cell.number_format = 'yyyy-mm-dd'
+                elif c_idx == 3:
+                    cell.number_format = 'hh:mm'
+                elif c_idx == 6:
                     cell.number_format = '₹#,##0.00'
-    
+
     for column in ws.columns:
         max_length = 0
         column_letter = column[0].column_letter
         for cell in column:
             try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
+                if cell.value is None:
+                    continue
+                max_length = max(max_length, len(str(cell.value)))
+            except Exception:
                 pass
-        adjusted_width = min(max_length + 2, 20)
-        ws.column_dimensions[column_letter].width = adjusted_width
-    
+        ws.column_dimensions[column_letter].width = min(max_length + 2, 22)
+
     excel_buffer = io.BytesIO()
     wb.save(excel_buffer)
     excel_buffer.seek(0)
-    
+
     return send_file(
         excel_buffer,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

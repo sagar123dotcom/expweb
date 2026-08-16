@@ -315,6 +315,105 @@ input, select, textarea {
   font-family: inherit;
 }
 
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(1) brightness(1.8) saturate(1.5);
+  background-color: transparent;
+  margin-left: 6px;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit,
+input[type="month"]::-webkit-datetime-edit,
+input[type="week"]::-webkit-datetime-edit {
+  color: var(--text-primary);
+}
+
+.expense-category-select,
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 38px;
+}
+
+.expense-category-select {
+  background-position: right 12px center;
+}
+
+.time-field-shell {
+  position: relative;
+  display: block;
+}
+
+.time-field-shell::before {
+  content: "Time: --:--";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  z-index: 1;
+  transition: opacity 0.15s ease;
+}
+
+.time-field-shell.has-value::before {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.time-field-shell input[type="time"] {
+  position: relative;
+  z-index: 2;
+  padding-right: 32px;
+}
+
+#needsSetupOverlay {
+  align-items: center;
+  justify-content: center;
+}
+
+#needsSetupList {
+  align-items: stretch;
+}
+
+#needsSetupList label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 56px;
+  margin: 0;
+  gap: 10px;
+}
+
+#needsSetupList input[type="checkbox"] {
+  margin: 0;
+}
+
 input::placeholder, textarea::placeholder {
   color: var(--text-disabled);
 }

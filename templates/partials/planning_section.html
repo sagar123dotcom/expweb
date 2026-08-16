@@ -1,16 +1,106 @@
 <!-- First-time Needs Setup Overlay -->
-<div id="needsSetupOverlay" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden">
-  <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg max-h-[90vh] overflow-y-auto">
-    <h5 class="text-lg font-semibold text-slate-100 mb-1">🏠 Set Up Your Monthly Needs</h5>
-    <p class="text-sm text-slate-400 mb-4">Select recurring mandatory expenses that apply to you.</p>
-    <div id="needsSetupList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4"></div>
-    <div class="flex gap-2 justify-end">
-      <button type="button" onclick="skipNeedsSetup()" class="px-3 py-2 bg-slate-700 text-slate-300 font-medium rounded-lg text-sm hover:bg-slate-600 transition-colors">Skip for now</button>
-      <button type="button" onclick="submitNeedsSetup()" class="px-3 py-2 bg-purple-600 text-white font-medium rounded-lg text-sm hover:bg-purple-700 transition-colors">Save Needs</button>
-    </div>
-  </div>
-</div>
+<div id="needsSetupOverlay"
+     class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
 
+    <!-- Modal -->
+    <div class="relative flex w-full max-w-2xl flex-col overflow-hidden
+                rounded-2xl border border-slate-700/80
+                bg-slate-900 shadow-2xl">
+
+        <!-- Top accent -->
+        <div class="absolute inset-x-0 top-0 h-1
+                    bg-gradient-to-r from-purple-600 via-violet-500 to-blue-500">
+        </div>
+
+        <!-- Header -->
+        <div class="px-6 pb-5 pt-7 sm:px-7">
+
+            <div class="flex items-center gap-4">
+
+                <!-- Icon -->
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center
+                            rounded-xl border border-purple-500/20
+                            bg-purple-500/10 text-xl">
+                    🏠
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                        Set Up Your Monthly Needs
+                    </h2>
+
+                    <p class="mt-1 text-sm text-slate-400">
+                        Select the recurring mandatory expenses that apply to you.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Divider -->
+        <div class="border-t border-slate-800"></div>
+
+
+        <!-- Content -->
+        <div class="px-6 py-5 sm:px-7">
+
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-slate-200">
+                    Monthly Expenses
+                </h3>
+
+                <p class="mt-1 text-xs text-slate-500">
+                    Choose all expenses that apply to you.
+                </p>
+            </div>
+
+
+            <!-- Needs List -->
+            <div id="needsSetupList"
+                 class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-3
+                    border-t border-slate-800
+                    bg-slate-950/40 px-6 py-4 sm:px-7">
+
+            <button
+                type="button"
+                onclick="skipNeedsSetup()"
+                class="rounded-xl border border-slate-700
+                       bg-slate-800 px-5 py-2.5
+                       text-sm font-semibold text-slate-300
+                       transition-all duration-200
+                       hover:border-slate-600
+                       hover:bg-slate-700
+                       hover:text-white">
+                Skip for now
+            </button>
+
+            <button
+                type="button"
+                onclick="submitNeedsSetup()"
+                class="rounded-xl bg-gradient-to-r
+                       from-purple-600 to-violet-600
+                       px-5 py-2.5
+                       text-sm font-semibold text-white
+                       shadow-lg shadow-purple-900/20
+                       transition-all duration-200
+                       hover:from-purple-500
+                       hover:to-violet-500
+                       hover:shadow-purple-900/30">
+                Save Needs
+            </button>
+
+        </div>
+
+    </div>
+</div>
 <!-- Needs Management + Goal Planner + Widgets -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
   <!-- Needs Card -->

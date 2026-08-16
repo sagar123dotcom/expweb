@@ -58,31 +58,110 @@
 
   <!-- Quick Actions Section -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <!-- Add Expense Card -->
-    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-700 mb-3">
-        <h5 class="text-base font-semibold text-slate-100 m-0">➕ Add Expense</h5>
-        <span class="text-lg">📝</span>
+<!-- Add Expense Card -->
+<div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm
+            hover:shadow-lg hover:border-slate-600 transition-all">
+
+  <div class="flex justify-between items-center pb-3 border-b border-slate-700 mb-3">
+    <h5 class="text-base font-semibold text-slate-100 m-0">
+      ➕ Add Expense
+    </h5>
+    <span class="text-lg">📝</span>
+  </div>
+
+  <form id="expenseForm" class="space-y-2" onsubmit="return false;">
+
+    <!-- Date + Time -->
+    <div class="grid grid-cols-2 gap-2">
+      <input
+        type="date"
+        id="expenseDate"
+        name="date"
+        class="w-full px-3 py-2 bg-slate-800 border border-slate-700
+               rounded-lg text-sm text-slate-100
+               focus:outline-none focus:ring-2 focus:ring-primary
+               focus:border-transparent"
+        required
+      >
+
+      <div class="time-field-shell">
+        <input
+          type="time"
+          id="expenseTime"
+          name="time"
+          class="w-full px-3 py-2 bg-slate-800 border border-slate-700
+                 rounded-lg text-sm text-slate-100
+                 focus:outline-none focus:ring-2 focus:ring-primary
+                 focus:border-transparent"
+          aria-label="Expense time"
+          required
+        >
       </div>
-      <form id="expenseForm" class="space-y-2" onsubmit="return false;">
-        <div>
-          <input type="date" id="expenseDate" name="date" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" name="name" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Description" required>
-          <select name="category" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
-            <option value="" class="bg-slate-800 text-slate-100">Category</option>
-            <option class="bg-slate-800 text-slate-100">Education</option><option class="bg-slate-800 text-slate-100">Healthcare</option><option class="bg-slate-800 text-slate-100">Entertainment</option>
-            <option class="bg-slate-800 text-slate-100">Utilities</option><option class="bg-slate-800 text-slate-100">Groceries</option><option class="bg-slate-800 text-slate-100">Transport</option>
-            <option class="bg-slate-800 text-slate-100">Miscellaneous</option><option class="bg-slate-800 text-slate-100">Income</option>
-          </select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="number" name="amount" step="0.01" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Amount ₹" required>
-          <button type="button" onclick="addExpense(); return false;" class="px-3 py-2 bg-gradient-to-r from-success to-emerald-500 text-white font-medium rounded-lg text-sm hover:shadow-lg hover:from-emerald-500 hover:to-green-500 transition-all">Add</button>
-        </div>
-      </form>
     </div>
+
+    <!-- Name + Category -->
+    <div class="grid grid-cols-2 gap-2">
+      <input
+        type="text"
+        name="name"
+        class="w-full px-3 py-2 bg-slate-800 border border-slate-700
+               rounded-lg text-sm text-slate-100 placeholder-slate-500
+               focus:outline-none focus:ring-2 focus:ring-primary
+               focus:border-transparent"
+        placeholder="Description"
+        required
+      >
+
+      <select
+        name="category"
+        class="expense-category-select w-full px-3 py-2 bg-slate-800 border border-slate-700
+               rounded-lg text-sm text-slate-100
+               focus:outline-none focus:ring-2 focus:ring-primary
+               focus:border-transparent"
+        required
+      >
+        <option value="" class="bg-slate-800 text-slate-100">
+          Category
+        </option>
+        <option>Education</option>
+        <option>Healthcare</option>
+        <option>Entertainment</option>
+        <option>Utilities</option>
+        <option>Groceries</option>
+        <option>Transport</option>
+        <option>Miscellaneous</option>
+        <option>Income</option>
+        <option>Fashion</option>
+      </select>
+    </div>
+
+    <!-- Amount + Add -->
+    <div class="grid grid-cols-2 gap-2">
+      <input
+        type="number"
+        name="amount"
+        step="0.01"
+        class="w-full px-3 py-2 bg-slate-800 border border-slate-700
+               rounded-lg text-sm text-slate-100 placeholder-slate-500
+               focus:outline-none focus:ring-2 focus:ring-primary
+               focus:border-transparent"
+        placeholder="Amount ₹"
+        required
+      >
+
+      <button
+        type="button"
+        onclick="addExpense(); return false;"
+        class="px-3 py-2 bg-gradient-to-r from-success to-emerald-500
+               text-white font-medium rounded-lg text-sm
+               hover:shadow-lg hover:from-emerald-500 hover:to-green-500
+               transition-all">
+        Add
+      </button>
+    </div>
+
+  </form>
+</div>
 
     <!-- Quick Actions Card -->
     <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-lg hover:border-slate-600 hover:bg-slate-800 transition-all">
@@ -188,7 +267,7 @@
             <p class="font-semibold text-sm m-0 {% if e.category|lower == 'income' %}text-emerald-600{% else %}text-red-600{% endif %}">
               {% if e.category|lower == 'income' %}+{% else %}-{% endif %}₹{{ "%.2f"|format(e.amount) }}
             </p>
-            <p class="text-xs text-slate-400 m-0">{{ e.date }}</p>
+            <p class="transaction-date">{{ e.display_datetime or e.date }}</p>
             <p class="transaction-balance">Bal: ₹{{ "%.2f"|format(e.running_balance) }}</p>
           </div>
           <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all" onclick="deleteExpense({{ e.id }}); return false;" title="Delete">×</button>
@@ -218,50 +297,114 @@
 </style>
 
 <script>
+function getLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getLocalTimeString(date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatDisplayTime(dateValue, timeValue) {
+  if (!dateValue) return '--';
+  const safeTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(timeValue || '') ? timeValue : '00:00';
+  const date = new Date(`${dateValue}T${safeTime}:00`);
+  if (Number.isNaN(date.getTime())) return dateValue;
+
+  const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+  const datePart = new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  const timePart = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+  return `${weekday}, ${datePart} · ${timePart}`;
+}
+
+function validateExpenseTime(timeValue) {
+  if (!timeValue) return false;
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.test(timeValue);
+  return match;
+}
+
+function syncExpenseTimeVisualState() {
+  const timeInput = document.getElementById('expenseTime');
+  const shell = timeInput ? timeInput.closest('.time-field-shell') : null;
+  if (!timeInput || !shell) return;
+
+  const hasValue = !!timeInput.value && /^([01]\d|2[0-3]):([0-5]\d)$/.test(timeInput.value);
+  shell.classList.toggle('has-value', hasValue);
+}
+
 async function addExpense() {
   const form = document.getElementById('expenseForm');
   const formData = new FormData(form);
-  
-  // Debug: Log form data
+
+  const date = formData.get('date');
+  const timeValue = formData.get('time');
+  const name = formData.get('name');
+  const category = formData.get('category');
+  const amount = formData.get('amount');
+
+  if (!date || !validateExpenseTime(timeValue)) {
+    showAlert('Please enter a valid date and time in 24-hour HH:mm format.', 'warning');
+    return false;
+  }
+
   console.log('[ADD EXPENSE] Form submitted');
-  console.log('[ADD EXPENSE] Date:', formData.get('date'));
-  console.log('[ADD EXPENSE] Name:', formData.get('name'));
-  console.log('[ADD EXPENSE] Category:', formData.get('category'));
-  console.log('[ADD EXPENSE] Amount:', formData.get('amount'));
-  
+  console.log('[ADD EXPENSE] Date:', date);
+  console.log('[ADD EXPENSE] Time:', timeValue);
+  console.log('[ADD EXPENSE] Name:', name);
+  console.log('[ADD EXPENSE] Category:', category);
+  console.log('[ADD EXPENSE] Amount:', amount);
   try {
     console.log('[ADD EXPENSE] Sending request to /add');
-    const response = await fetch('/add', { method: 'POST', body: formData });
-    
+
+    const response = await fetch('/add', {
+      method: 'POST',
+      body: formData
+    });
+
     console.log('[ADD EXPENSE] Response status:', response.status);
-    console.log('[ADD EXPENSE] Response ok:', response.ok);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[ADD EXPENSE] Response error:', errorText);
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
-    
+
     const data = await response.json();
+
     console.log('[ADD EXPENSE] Response data:', data);
-    
+
     if (data.success) {
       console.log('[ADD EXPENSE] ✅ Success:', data.message);
+
       showAlert(data.message, 'success');
+
       form.reset();
-      // Reset date to today
-      const todayDate = new Date().toISOString().split('T')[0];
-      document.getElementById('expenseDate').value = todayDate;
+
+      const now = new Date();
+      document.getElementById('expenseDate').value = getLocalDateString(now);
+      const resetTimeInput = document.getElementById('expenseTime');
+      if (resetTimeInput) {
+        resetTimeInput.value = '';
+        syncExpenseTimeVisualState();
+      }
+
       setTimeout(loadExpenses, 300);
+
     } else {
       console.error('[ADD EXPENSE] ❌ Error:', data.error);
       showAlert(data.error || 'Error occurred', 'danger');
     }
+
   } catch (e) {
     console.error('[ADD EXPENSE] ❌ Exception:', e.message);
     console.error('[ADD EXPENSE] Stack:', e.stack);
+
     showAlert('Error adding expense: ' + e.message, 'danger');
   }
+
   return false;
 }
 
@@ -504,7 +647,7 @@ async function loadExpenses(params = new URLSearchParams()) {
               <p class="transaction-amount ${isIncome ? 'income-amount' : 'expense-amount'}">
                 ${isIncome ? '+' : '-'}₹${parseFloat(e.amount).toFixed(2)}
               </p>
-              <p class="transaction-date">${e.date}</p>
+              <p class="transaction-date">${e.display_datetime || formatDisplayTime(e.date, e.time)}</p>
               <p class="transaction-balance">Bal: ₹${parseFloat(e.running_balance).toFixed(2)}</p>
             </div>
             <button class="transaction-delete-btn" onclick="deleteExpense(${e.id}); return false;" title="Delete">×</button>
@@ -553,12 +696,23 @@ function showAlert(message, type) {
 
 // Load expenses on page load
 document.addEventListener('DOMContentLoaded', function() {
-  // Set default date to today
-  const todayDate = new Date().toISOString().split('T')[0];
+  const now = new Date();
   const dateInput = document.getElementById('expenseDate');
+  const timeInput = document.getElementById('expenseTime');
   if (dateInput) {
-    dateInput.value = todayDate;
+    dateInput.value = getLocalDateString(now);
   }
+  if (timeInput) {
+    timeInput.value = '';
+  }
+  syncExpenseTimeVisualState();
+
+  const timeField = document.getElementById('expenseTime');
+  if (timeField) {
+    timeField.addEventListener('input', syncExpenseTimeVisualState);
+    timeField.addEventListener('change', syncExpenseTimeVisualState);
+  }
+
   loadExpenses();
 });
 </script>

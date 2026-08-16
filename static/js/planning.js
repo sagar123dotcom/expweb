@@ -52,17 +52,61 @@ async function loadPlanningDashboard() {
 async function showNeedsSetupOverlay() {
   const overlay = document.getElementById('needsSetupOverlay');
   const list = document.getElementById('needsSetupList');
+
   if (!overlay || !list) return;
 
   try {
     const data = await apiFetch('/api/needs/templates');
+
     list.innerHTML = (data.templates || []).map(t => `
-      <label class="flex items-center gap-2 p-2 border border-slate-700 rounded-lg bg-slate-800/40 cursor-pointer hover:bg-slate-800">
-        <input type="checkbox" class="need-setup-check" value="${t.name}" checked>
-        <span class="text-sm text-slate-200">${t.name}</span>
+      <label
+        class="
+          group flex min-h-[56px] w-full cursor-pointer
+          items-center justify-start gap-3
+          rounded-xl border border-slate-700
+          bg-slate-800/50 px-4 py-3
+          transition-all duration-200
+          hover:border-purple-500/60
+          hover:bg-slate-800
+        "
+      >
+
+        <input
+          type="checkbox"
+          class="
+            need-setup-check
+            h-4 w-4 shrink-0
+            cursor-pointer
+            rounded
+            border-slate-600
+            bg-slate-700
+            text-purple-600
+            focus:ring-2
+            focus:ring-purple-500
+          "
+          value="${t.name}"
+          checked
+        >
+
+        <span
+          class="
+            truncate
+            text-sm font-medium
+            text-slate-200
+            transition-colors
+            group-hover:text-white
+          "
+        >
+          ${t.name}
+        </span>
+
       </label>
     `).join('');
+
+    // IMPORTANT: flex is required for true center alignment
     overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+
   } catch (e) {
     console.error('[NEEDS SETUP]', e.message);
   }

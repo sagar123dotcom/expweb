@@ -1,38 +1,80 @@
 /* ================================================================
-   🌙 PREMIUM DARK THEME - ExpenseTracker SaaS
+   THEME SYSTEM - ExpenseTracker SaaS
    ================================================================ */
 
-:root {
-  /* ---- DARK THEME COLORS ---- */
-  --bg-primary: #0f172a;      /* Deep navy background */
-  --bg-secondary: #1e293b;    /* Card background */
-  --bg-tertiary: #293548;     /* Hover state */
-  --border-color: #334155;    /* Subtle borders */
-  --border-light: #475569;    /* Lighter borders */
-  
-  /* ---- TEXT COLORS ---- */
-  --text-primary: #e2e8f0;    /* Main text */
-  --text-secondary: #94a3b8;  /* Secondary text */
-  --text-disabled: #64748b;   /* Disabled text */
-  
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---- BACKGROUNDS ---- */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #293548;
+  --body-gradient: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%);
+  --nav-gradient: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(41, 53, 72, 0.6) 50%, rgba(30, 41, 59, 0.8) 100%);
+
+  /* ---- BORDERS ---- */
+  --border-color: #334155;
+  --border-light: #475569;
+
+  /* ---- TEXT ---- */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-disabled: #64748b;
+
   /* ---- ACCENT COLORS ---- */
-  --accent-income: #4ade80;   /* Emerald green for income */
+  --accent-income: #4ade80;
   --accent-income-hover: #22c55e;
-  --accent-expense: #f87171;  /* Rose red for expenses */
+  --accent-expense: #f87171;
   --accent-expense-hover: #ef4444;
-  --accent-balance: #60a5fa;  /* Indigo blue for balance */
-  --accent-primary: #a78bfa;  /* Purple gradient start */
-  --accent-secondary: #06b6d4; /* Cyan gradient end */
-  
+  --accent-balance: #60a5fa;
+  --accent-primary: #a78bfa;
+  --accent-secondary: #06b6d4;
+
   /* ---- SHADOWS & EFFECTS ---- */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 20px rgba(167, 139, 250, 0.3);
   --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.3);
-  
+
+  /* ---- FORM ---- */
+  --input-color-scheme: dark;
+  --calendar-filter: invert(1) brightness(1.8) saturate(1.5);
+  --stat-bar-bg: rgba(255, 255, 255, 0.1);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
   /* ---- TRANSITIONS ---- */
   --transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --body-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+  --nav-gradient: linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 50%, rgba(255, 255, 255, 0.95) 100%);
+
+  --border-color: #e2e8f0;
+  --border-light: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-disabled: #94a3b8;
+
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --shadow-glow: 0 0 20px rgba(167, 139, 250, 0.15);
+  --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.15);
+
+  --input-color-scheme: light;
+  --calendar-filter: none;
+  --stat-bar-bg: rgba(15, 23, 42, 0.08);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23475569' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 /* ================================================================
@@ -50,13 +92,27 @@ html {
 }
 
 body {
-  background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #0f172a 100%);
+  background: var(--body-gradient);
   color: var(--text-primary);
   font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   line-height: 1.6;
   background-attachment: fixed;
   min-height: 100vh;
+  transition: var(--theme-transition);
+}
+
+body,
+nav,
+.card,
+.form-card,
+.stat-card,
+input,
+select,
+textarea,
+.transaction-item,
+.theme-toggle {
+  transition: var(--theme-transition);
 }
 
 /* ================================================================
@@ -139,7 +195,7 @@ body {
    ================================================================ */
 
 nav {
-  background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(41, 53, 72, 0.6) 50%, rgba(30, 41, 59, 0.8) 100%);
+  background: var(--nav-gradient);
   border-bottom: 1px solid var(--border-light);
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow-md);
@@ -147,6 +203,45 @@ nav {
   top: 0;
   z-index: 50;
   padding: 12px 20px;
+  transition: var(--theme-transition);
+}
+
+/* ================================================================
+   THEME TOGGLE
+   ================================================================ */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.theme-toggle-icon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 /* ================================================================
@@ -221,7 +316,7 @@ nav {
 
 .stat-bar {
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--stat-bar-bg);
   border-radius: 2px;
   margin-top: 12px;
   overflow: hidden;
@@ -236,7 +331,7 @@ nav {
 
 .progress-bar-container {
   height: 6px;
-  background: #1e293b;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -251,7 +346,7 @@ nav {
 }
 
 .progress-text {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
 }
@@ -320,7 +415,7 @@ input[type="time"],
 input[type="datetime-local"],
 input[type="month"],
 input[type="week"] {
-  color-scheme: dark;
+  color-scheme: var(--input-color-scheme);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator,
@@ -330,7 +425,7 @@ input[type="month"]::-webkit-calendar-picker-indicator,
 input[type="week"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 1;
-  filter: invert(1) brightness(1.8) saturate(1.5);
+  filter: var(--calendar-filter);
   background-color: transparent;
   margin-left: 6px;
 }
@@ -348,7 +443,7 @@ select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: var(--select-arrow);
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px;
@@ -722,3 +817,49 @@ table tbody tr:hover {
     padding: 10px 12px;
   }
 }
+
+/* ================================================================
+   LIGHT THEME — Tailwind utility overrides
+   ================================================================ */
+
+[data-theme="light"] .bg-gradient-dark {
+  background: var(--body-gradient) !important;
+}
+
+[data-theme="light"] nav.bg-gradient-to-r {
+  background: var(--nav-gradient) !important;
+}
+
+[data-theme="light"] .bg-slate-950 { background-color: #f8fafc !important; }
+[data-theme="light"] .bg-slate-900 { background-color: #ffffff !important; }
+[data-theme="light"] .bg-slate-800 { background-color: #f1f5f9 !important; }
+[data-theme="light"] .bg-slate-700 { background-color: #e2e8f0 !important; }
+[data-theme="light"] .bg-slate-950\/80 { background-color: rgba(248, 250, 252, 0.92) !important; }
+[data-theme="light"] .bg-slate-950\/40 { background-color: rgba(248, 250, 252, 0.75) !important; }
+[data-theme="light"] .bg-slate-800\/40 { background-color: rgba(241, 245, 249, 0.65) !important; }
+[data-theme="light"] .bg-slate-800\/50 { background-color: rgba(241, 245, 249, 0.75) !important; }
+
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/80 { border-color: #e2e8f0 !important; }
+[data-theme="light"] .border-slate-800 { border-color: #e2e8f0 !important; }
+[data-theme="light"] .border-slate-600 { border-color: #cbd5e1 !important; }
+
+[data-theme="light"] .text-slate-100 { color: #0f172a !important; }
+[data-theme="light"] .text-slate-200 { color: #1e293b !important; }
+[data-theme="light"] .text-slate-300 { color: #334155 !important; }
+[data-theme="light"] .text-slate-400 { color: #475569 !important; }
+[data-theme="light"] .text-slate-500 { color: #64748b !important; }
+[data-theme="light"] .text-slate-600 { color: #94a3b8 !important; }
+
+[data-theme="light"] .placeholder-slate-500::placeholder { color: #94a3b8 !important; }
+
+[data-theme="light"] .hover\:bg-slate-700:hover { background-color: #e2e8f0 !important; }
+[data-theme="light"] .hover\:bg-slate-800:hover { background-color: #f1f5f9 !important; }
+[data-theme="light"] .hover\:bg-slate-600:hover { background-color: #cbd5e1 !important; }
+[data-theme="light"] .hover\:border-slate-600:hover { border-color: #cbd5e1 !important; }
+[data-theme="light"] .hover\:text-slate-300:hover { color: #334155 !important; }
+[data-theme="light"] .hover\:text-slate-400:hover { color: #475569 !important; }
+
+[data-theme="light"] .from-slate-950 { --tw-gradient-from: #ffffff !important; }
+[data-theme="light"] .via-slate-900 { --tw-gradient-via: #f8fafc !important; }
+[data-theme="light"] .to-slate-950 { --tw-gradient-to: #ffffff !important; }

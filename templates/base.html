@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t !== 'light' && t !== 'dark') t = 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title if title else "Expense Tracker" }}</title>
@@ -62,7 +69,16 @@
       </a>
 
       <!-- Menu -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 sm:gap-4">
+        <button
+          id="themeToggle"
+          type="button"
+          class="theme-toggle"
+          aria-label="Switch to light theme"
+          aria-pressed="false">
+          <span class="theme-toggle-icon" aria-hidden="true">☀️</span>
+          <span class="theme-toggle-label hidden sm:inline">Light</span>
+        </button>
         {% if session.username %}
           <!-- User Avatar -->
           <div class="flex items-center gap-3">
@@ -141,16 +157,102 @@
 
   <script>
     lucide.createIcons();
-    
+
+    (function () {
+      var STORAGE_KEY = 'theme';
+      var toggle = document.getElementById('themeToggle');
+      if (!toggle) return;
+
+      function getTheme() {
+        var t = document.documentElement.getAttribute('data-theme');
+        return t === 'light' ? 'light' : 'dark';
+      }
+
+      function updateToggleUI(theme) {
+        var isDark = theme === 'dark';
+        toggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        toggle.setAttribute('aria-pressed', isDark ? 'false' : 'true');
+        toggle.querySelector('.theme-toggle-icon').textContent = isDark ? '☀️' : '🌙';
+        toggle.querySelector('.theme-toggle-label').textContent = isDark ? 'Light' : 'Dark';
+      }
+
+      function updateChartsForTheme(theme) {
+        if (typeof Chart === 'undefined') return;
+        var isLight = theme === 'light';
+        var legendColor = isLight ? '#475569' : '#cbd5e1';
+        var tickColor = isLight ? '#64748b' : '#94a3b8';
+        var gridColor = isLight ? '#e2e8f0' : '#334155';
+        var tooltipBg = isLight ? '#ffffff' : '#0f172a';
+        var tooltipTitle = isLight ? '#0f172a' : '#e2e8f0';
+        var tooltipBody = isLight ? '#475569' : '#cbd5e1';
+        var tooltipBorder = isLight ? '#cbd5e1' : '#475569';
+        var pointBorder = isLight ? '#ffffff' : '#1e293b';
+
+        document.querySelectorAll('canvas').forEach(function (canvas) {
+          var chart = Chart.getChart(canvas);
+          if (!chart) return;
+          if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+            chart.options.plugins.legend.labels.color = legendColor;
+          }
+          if (chart.options.plugins && chart.options.plugins.tooltip) {
+            chart.options.plugins.tooltip.backgroundColor = tooltipBg;
+            chart.options.plugins.tooltip.titleColor = tooltipTitle;
+            chart.options.plugins.tooltip.bodyColor = tooltipBody;
+            chart.options.plugins.tooltip.borderColor = tooltipBorder;
+          }
+          if (chart.config.type === 'doughnut' && chart.data.datasets[0]) {
+            chart.data.datasets[0].borderColor = pointBorder;
+          }
+          if (chart.config.type === 'line' && chart.data.datasets[0]) {
+            chart.data.datasets[0].pointBorderColor = pointBorder;
+          }
+          if (chart.options.scales) {
+            ['x', 'y'].forEach(function (axis) {
+              if (chart.options.scales[axis]) {
+                if (chart.options.scales[axis].ticks) {
+                  chart.options.scales[axis].ticks.color = tickColor;
+                }
+                if (chart.options.scales[axis].grid) {
+                  chart.options.scales[axis].grid.color = gridColor;
+                }
+              }
+            });
+          }
+          chart.update();
+        });
+      }
+
+      function applyTheme(theme, persist) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (persist) localStorage.setItem(STORAGE_KEY, theme);
+        updateToggleUI(theme);
+        updateChartsForTheme(theme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: theme } }));
+      }
+
+      applyTheme(getTheme(), false);
+
+      toggle.addEventListener('click', function () {
+        applyTheme(getTheme() === 'dark' ? 'light' : 'dark', true);
+      });
+
+      toggle.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle.click();
+        }
+      });
+    })();
+
     // Menu dropdown toggle
     const menuBtn = document.getElementById('menuDropdown');
     const menuContent = document.getElementById('menuContent');
-    
+
     menuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       menuContent.classList.toggle('hidden');
     });
-    
+
     document.addEventListener('click', () => {
       menuContent.classList.add('hidden');
     });

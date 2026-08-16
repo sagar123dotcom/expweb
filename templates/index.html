@@ -4,8 +4,14 @@
 <div class="dashboard-container space-y-4">
   <!-- Header Section -->
   <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 shadow-lg text-center">
-    <h2 class="text-3xl font-bold text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text mb-2">📊 Financial Dashboard</h2>
-    <p class="text-slate-400 text-sm">Track your income, expenses, and savings goals</p>
+<h2 class="flex items-center justify-center gap-3 text-3xl font-bold text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text mb-2">
+    <img
+        src="{{ url_for('static', filename='dash.png') }}"
+        alt="Financial Dashboard"
+        class="h-20 w-10 object-contain"
+    >
+    <span>Financial Dashboard</span>
+</h2>   <p class="text-slate-400 text-sm">Track your income, expenses, and savings goals</p>
   </div>
 
   <!-- Stats Cards -->

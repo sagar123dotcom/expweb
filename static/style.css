@@ -863,3 +863,66 @@ table tbody tr:hover {
 [data-theme="light"] .from-slate-950 { --tw-gradient-from: #ffffff !important; }
 [data-theme="light"] .via-slate-900 { --tw-gradient-via: #f8fafc !important; }
 [data-theme="light"] .to-slate-950 { --tw-gradient-to: #ffffff !important; }
+
+/* Professional delete button */
+.transaction-item {
+  position: relative;
+}
+
+.transaction-delete-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 10px;
+
+  background: rgba(239, 68, 68, 0.10);
+  color: #f87171;
+
+  cursor: pointer;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.transaction-item:hover .transaction-delete-btn,
+.transaction-delete-btn:focus {
+  opacity: 1;
+  visibility: visible;
+}
+
+.transaction-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.20);
+  border-color: rgba(248, 113, 113, 0.6);
+  color: #fca5a5;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.transaction-delete-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.delete-icon {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}

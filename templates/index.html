@@ -276,7 +276,35 @@
             <p class="transaction-date">{{ e.display_datetime or e.date }}</p>
             <p class="transaction-balance">Bal: ₹{{ "%.2f"|format(e.running_balance) }}</p>
           </div>
-          <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all" onclick="deleteExpense({{ e.id }}); return false;" title="Delete">×</button>
+<<button
+    type="button"
+    class="transaction-delete-btn"
+    onclick="deleteExpense(${e.id}); return false;"
+    title="Delete transaction"
+    aria-label="Delete transaction">
+
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="delete-icon">
+
+        <!-- Dustbin lid -->
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+
+        <!-- Dustbin body -->
+        <path d="M19 6l-1 14H6L5 6"></path>
+
+        <!-- Inside lines -->
+        <path d="M10 11v5"></path>
+        <path d="M14 11v5"></path>
+    </svg>
+</button>
         </div>
       {% endfor %}
     </div>
@@ -638,26 +666,66 @@ async function loadExpenses(params = new URLSearchParams()) {
         
         const icon = iconMap[e.category.toLowerCase()] || '📌';
         
-        const cardHTML = `
-          <div id="expense-${e.id}" class="transaction-item ${isIncome ? 'transaction-income' : 'transaction-expense'}">
-            <div class="transaction-left">
-              <div class="transaction-category-icon">
-                ${isIncome ? '<span class="icon-income">' + icon + '</span>' : '<span class="icon-category">' + icon + '</span>'}
-              </div>
-              <div class="transaction-details">
-                <p class="transaction-name">${e.name}</p>
-                <p class="transaction-category">${e.category}</p>
-              </div>
-            </div>
-            <div class="transaction-right">
-              <p class="transaction-amount ${isIncome ? 'income-amount' : 'expense-amount'}">
-                ${isIncome ? '+' : '-'}₹${parseFloat(e.amount).toFixed(2)}
-              </p>
-              <p class="transaction-date">${e.display_datetime || formatDisplayTime(e.date, e.time)}</p>
-              <p class="transaction-balance">Bal: ₹${parseFloat(e.running_balance).toFixed(2)}</p>
-            </div>
-            <button class="transaction-delete-btn" onclick="deleteExpense(${e.id}); return false;" title="Delete">×</button>
-          </div>
+const cardHTML = `
+  <div
+    id="expense-${e.id}"
+    class="transaction-item relative group ${isIncome ? 'transaction-income' : 'transaction-expense'}"
+  >
+
+    <div class="transaction-left">
+      <div class="transaction-category-icon">
+        ${isIncome
+          ? '<span class="icon-income">' + icon + '</span>'
+          : '<span class="icon-category">' + icon + '</span>'}
+      </div>
+
+      <div class="transaction-details">
+        <p class="transaction-name">${e.name}</p>
+        <p class="transaction-category">${e.category}</p>
+      </div>
+    </div>
+
+    <div class="transaction-right">
+      <p class="transaction-amount ${isIncome ? 'income-amount' : 'expense-amount'}">
+        ${isIncome ? '+' : '-'}₹${parseFloat(e.amount).toFixed(2)}
+      </p>
+
+      <p class="transaction-date">
+        ${e.display_datetime || formatDisplayTime(e.date, e.time)}
+      </p>
+
+      <p class="transaction-balance">
+        Bal: ₹${parseFloat(e.running_balance).toFixed(2)}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="transaction-delete-btn"
+      onclick="deleteExpense(${e.id}); return false;"
+      title="Delete transaction"
+      aria-label="Delete transaction"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="delete-icon"
+      >
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+        <path d="M19 6l-1 14H6L5 6"></path>
+        <path d="M10 11v5"></path>
+        <path d="M14 11v5"></path>
+      </svg>
+    </button>
+
+  </div>
+
         `;
         transactionsList.innerHTML += cardHTML;
       });

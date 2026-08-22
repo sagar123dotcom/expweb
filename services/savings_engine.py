@@ -13,13 +13,16 @@ from utils.calculations import (
     affordability_message,
     savings_impact,
 )
+from utils.date_filters import build_date_conditions
 
 
 def _month_key(dt=None):
     return (dt or datetime.now()).strftime("%Y-%m")
 
 
-def _sum_for_month(conn, user_id, sql_extra, month_key):
+def _sum_for_month(conn, user_id, sql_extra, month_key, filter_args=None):
+    date_conditions, date_params, _ = build_date_conditions(filter_args or {})
+    filter_sql = " AND " + " AND ".join(date_conditions) if date_conditions else ""
     row = conn.execute(
         f"""
         SELECT COALESCE(SUM(amount), 0) AS total
@@ -27,30 +30,34 @@ def _sum_for_month(conn, user_id, sql_extra, month_key):
         WHERE user_id = ?
           AND strftime('%Y-%m', date) = ?
           {sql_extra}
+                    {filter_sql}
         """,
-        (user_id, month_key),
+                (user_id, month_key, *date_params),
     ).fetchone()
     return float(row["total"])
 
 
-def get_monthly_income(conn, user_id, month_key=None):
+def get_monthly_income(conn, user_id, month_key=None, filter_args=None):
     month_key = month_key or _month_key()
     income = _sum_for_month(
-        conn, user_id, "AND LOWER(category) = 'income'", month_key
+        conn, user_id, "AND LOWER(category) = 'income'", month_key, filter_args
     )
     if income > 0:
         return income, month_key
 
+    date_conditions, date_params, _ = build_date_conditions(filter_args or {})
+    filter_sql = " AND " + " AND ".join(date_conditions) if date_conditions else ""
     rows = conn.execute(
         """
         SELECT strftime('%Y-%m', date) AS month, SUM(amount) AS total
         FROM expenses
         WHERE user_id = ? AND LOWER(category) = 'income'
+        """ + filter_sql + """
         GROUP BY month
         ORDER BY month DESC
         LIMIT 3
         """,
-        (user_id,),
+        (user_id, *date_params),
     ).fetchall()
     if not rows:
         return 0.0, month_key
@@ -58,9 +65,9 @@ def get_monthly_income(conn, user_id, month_key=None):
     return avg, month_key
 
 
-def get_monthly_expenses(conn, user_id, month_key):
+def get_monthly_expenses(conn, user_id, month_key, filter_args=None):
     return _sum_for_month(
-        conn, user_id, "AND LOWER(category) != 'income'", month_key
+        conn, user_id, "AND LOWER(category) != 'income'", month_key, filter_args
     )
 
 
@@ -76,9 +83,9 @@ def get_needs_total(conn, user_id):
     return float(row["total"])
 
 
-def get_financial_snapshot(conn, user_id):
-    monthly_income, month_key = get_monthly_income(conn, user_id)
-    monthly_expenses = get_monthly_expenses(conn, user_id, month_key)
+def get_financial_snapshot(conn, user_id, filter_args=None):
+    monthly_income, month_key = get_monthly_income(conn, user_id, filter_args=filter_args)
+    monthly_expenses = get_monthly_expenses(conn, user_id, month_key, filter_args)
     needs_total = get_needs_total(conn, user_id)
     monthly_free_savings = monthly_income - needs_total
     actual_savings = monthly_income - monthly_expenses

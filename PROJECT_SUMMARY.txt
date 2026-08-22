@@ -1,0 +1,486 @@
+EXPWEB PROJECT SUMMARY
+=======================
+
+Document purpose
+----------------
+This document describes the current implementation of the expweb project. It is based on the source files, templates, services, migrations, and tests currently present in the repository.
+
+Project name
+------------
+Expense Tracker and Personal Financial Planning Application
+
+Location
+--------
+d:\Policia\Projects\expweb
+
+Current status
+--------------
+The project is a working Flask web application for tracking personal income and expenses. It has a dark, responsive dashboard and a newer planning API for recurring needs, personal savings goals, affordability calculations, and financial insights.
+
+The application contains two related feature layers:
+
+1. Core expense tracking
+   - User registration and login
+   - Optional Google OAuth login
+   - Income and expense recording
+   - Savings goal tracking
+   - Transaction filtering and search
+   - Running balance calculation
+   - Excel export
+   - Dashboard statistics
+
+2. Financial planning and analysis
+   - Recurring needs management
+   - First-time needs setup
+   - Personal goals with deadlines and priorities
+   - Goal progress and completion status
+   - Savings projections
+   - Product affordability calculations
+   - Generated financial insights
+
+The original dashboard routes remain active while the planning functionality is exposed through the /api blueprint.
+
+Technology stack
+----------------
+Backend:
+- Python
+- Flask 3.1.1
+- Flask-Bcrypt 1.0.1
+- Flask-CORS 5.0.1
+- Werkzeug 3.1.3
+- Requests 2.32.3
+- python-dotenv 1.0.1
+
+Database and persistence:
+- SQLite, using Python's built-in sqlite3 module
+- Database file: expenses.db
+- sqlite3.Row row factory for named column access
+- Runtime schema initialization and feature migrations
+
+Data and file processing:
+- Pandas 2.2.3
+- OpenPyXL 3.1.5
+- Excel workbook generation with formatting
+- CSV and spreadsheet-related project data files are included in the repository
+
+Production server:
+- Gunicorn 23.0.0
+
+Frontend:
+- Flask/Jinja HTML templates
+- Tailwind-style utility classes in templates
+- Custom CSS in static/style.css
+- Browser-side JavaScript in static/js/planning.js
+- Fetch-based asynchronous API calls
+
+Application entry point
+-----------------------
+The main application is app.py. It creates the Flask application, loads environment variables, configures sessions and CORS, initializes the database, defines the original web routes, and registers the planning API blueprint.
+
+The application starts database initialization when app.py is imported or executed. The default development server is started with:
+
+    python app.py
+
+The default local address is:
+
+    http://127.0.0.1:5000
+
+A production-style command is documented as:
+
+    gunicorn app:app -w 4 -b 0.0.0.0:5000
+
+User authentication
+-------------------
+Password authentication:
+- Users register through POST /register.
+- Passwords are hashed with Flask-Bcrypt before storage.
+- Users log in through POST /login.
+- Successful login stores user_id, username, and picture in the Flask session.
+- /logout clears the session.
+
+Google authentication:
+- /google_login starts the Google OAuth authorization flow.
+- /oauth2callback receives the authorization response.
+- The flow uses a random state value stored in the session to reduce request-forgery risk.
+- Google profile information can provide the username/email, Google ID, and profile picture.
+- Google OAuth requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.
+- OAUTH_REDIRECT_URI can be set when the registered callback URL must be explicit.
+
+Session configuration:
+- SESSION_COOKIE_SAMESITE is set to Lax.
+- SESSION_COOKIE_HTTPONLY is enabled.
+- SECRET_KEY is loaded from the environment when available.
+- A development fallback secret exists in app.py and should be replaced in production.
+
+Core web routes
+---------------
+GET /                  Renders the authenticated financial dashboard.
+GET/POST /register     Displays registration form and creates a user.
+GET/POST /login        Displays login form and authenticates a user.
+GET /logout            Clears the current session.
+GET /google_login      Starts Google OAuth login.
+GET /oauth2callback    Completes Google OAuth login.
+GET /coming-soon       Displays the coming-soon page.
+POST /add              Adds an expense transaction.
+POST /add_income       Adds an income transaction using the current date and time.
+POST /set_goal         Creates or replaces the legacy savings goal for the user.
+GET /get_expenses      Returns filtered transactions and aggregate financial totals as JSON.
+GET/POST /delete/<id>  Deletes a transaction after ownership verification.
+GET /export            Downloads the user's transactions as a formatted XLSX file.
+GET /stats             Displays the statistics page.
+
+Expense creation rules
+----------------------
+The /add endpoint requires:
+- date in YYYY-MM-DD format
+- time in 24-hour HH:MM format
+- non-empty description/name
+- non-empty category
+- numeric amount greater than zero
+
+The endpoint returns JSON with a success flag, message, and created expense ID. Invalid input returns an explanatory error and HTTP 400. Requests without a logged-in user return HTTP 401.
+
+Income is stored in the same expenses table as regular transactions. Income rows use the category Income and name Income. The dashboard identifies income by checking whether the category, case-insensitively, equals income.
+
+Dashboard behavior
+------------------
+The dashboard is rendered by templates/index.html and includes:
+- Total income card
+- Total expense card
+- Current balance card
+- Legacy savings goal card
+- Goal progress bar
+- Add expense form
+- Add income action
+- Set savings goal action
+- Transaction search and filters
+- Recent transaction list
+- Planning section loaded through JavaScript
+
+Supported transaction filters:
+- Category
+- Month
+- Year
+- Name search
+
+When no filters are selected, the dashboard limits the visible transaction list to the five most recent records. Filtered requests return matching records without that default limit.
+
+Transaction ordering uses date, time, and ID. Each displayed transaction receives:
+- Normalized time
+- Formatted display date and time
+- Running balance after that transaction
+
+Financial totals are calculated for the current user only:
+- Total income is the sum of rows whose category is Income.
+- Total expenses are the sum of all other rows.
+- Balance equals total income minus total expenses.
+- Legacy goal progress equals balance divided by goal amount, multiplied by 100.
+
+Planning API
+------------
+The API blueprint is defined in routes/api.py and is registered with the /api prefix. All planning endpoints require an authenticated session.
+
+Needs endpoints:
+- GET /api/needs/templates
+  Returns predefined setup templates.
+- GET /api/needs/setup-status
+  Returns setup completion state and the user's needs count.
+- GET /api/needs
+  Lists needs. Use active_only=true to return only active needs.
+- POST /api/needs/setup
+  Creates multiple needs from a list of names or detailed need objects.
+- POST /api/needs/setup/skip
+  Marks first-time setup as completed without creating needs.
+- POST /api/needs
+  Creates one need.
+- PUT /api/needs/<need_id>
+  Updates a need name and/or default monthly amount.
+- PATCH /api/needs/<need_id>/toggle
+  Enables or disables a need.
+- DELETE /api/needs/<need_id>
+  Deletes a need.
+
+Default needs templates:
+- Rent
+- EMI
+- Electricity
+- Water Bill
+- Internet
+- Insurance
+- Groceries
+- Fuel
+- Medical
+- Education
+
+Personal goal endpoints:
+- GET /api/personal-goals?status=active
+  Lists goals with projections. Supported statuses include active, archived, completed, and all.
+- GET /api/personal-goals/<goal_id>
+  Returns one goal and its projection.
+- POST /api/personal-goals
+  Creates a goal.
+- PUT /api/personal-goals/<goal_id>
+  Updates selected goal fields.
+- PATCH /api/personal-goals/<goal_id>/archive
+  Archives a goal.
+- DELETE /api/personal-goals/<goal_id>
+  Deletes a goal.
+
+A personal goal contains:
+- Goal name
+- Target amount
+- Saved amount
+- Target date
+- Priority from 1 through 5
+- Optional notes
+- Status: active, completed, or archived
+
+Savings and affordability endpoints:
+- GET /api/savings/summary
+  Returns the current financial snapshot.
+- GET /api/savings/goal/<goal_id>/projection
+  Returns a goal with savings projection data.
+- POST /api/affordability/calculate
+  Calculates how long a product would take to afford from current free savings.
+
+Insights endpoint:
+- GET /api/insights
+  Generates planning insights using the financial snapshot and active goal projections.
+
+API response conventions
+------------------------
+Successful API responses generally have this structure:
+
+    {"success": true, ...}
+
+Validation or application errors generally have this structure:
+
+    {"success": false, "error": "..."}
+
+Authentication failures return HTTP 401. Missing resources generally return HTTP 404. Invalid requests generally return HTTP 400.
+
+Database design
+---------------
+The database is initialized by init_db() in app.py and extended by db/migrations.py.
+
+users table:
+- id: integer primary key
+- username: unique username or Google email
+- password: bcrypt password hash
+- google_id: optional Google account identifier
+- picture: optional profile image URL
+
+expenses table:
+- id: integer primary key
+- user_id: owner of the transaction
+- date: transaction date stored as text
+- time: transaction time stored as HH:MM text
+- name: transaction description
+- category: expense category or Income
+- amount: numeric transaction amount
+
+The time column is added to older databases by migration logic and missing values are normalized to 00:00.
+
+goals table:
+- user_id: primary key and user owner
+- goal_amount: legacy dashboard savings goal
+
+needs table:
+- id: integer primary key
+- user_id: owner
+- name: need name
+- default_amount: expected monthly amount
+- is_active: enabled/disabled flag
+- created_at and updated_at timestamps
+- unique constraint on user_id and name
+
+personal_goals table:
+- id: integer primary key
+- user_id: owner
+- goal_name
+- target_amount
+- saved_amount
+- target_date
+- priority
+- notes
+- status
+- created_at and updated_at timestamps
+
+user_preferences table:
+- user_id: primary key
+- needs_setup_completed: first-time setup flag
+- updated_at timestamp
+
+Database access
+---------------
+Database connections are created by db/connection.py through get_db(). Each connection uses sqlite3.Row so code can access columns by name. Routes and services explicitly close connections after work is complete.
+
+Feature migration behavior
+--------------------------
+run_feature_migrations() performs safe, repeatable schema updates. It:
+- Adds the expenses.time column when absent.
+- Replaces missing or blank times with 00:00.
+- Creates needs, personal_goals, and user_preferences tables if absent.
+- Creates indexes for active needs and goal status queries.
+- Ignores already-applied ALTER TABLE and CREATE statements safely.
+
+Savings calculations
+--------------------
+The savings engine is implemented in services/savings_engine.py and uses pure helper functions from utils/calculations.py.
+
+Monthly financial snapshot:
+- Monthly income is calculated for the current month.
+- If current-month income is zero, the latest available income history, up to three months, is averaged.
+- Monthly expenses exclude transactions categorized as Income.
+- Active needs are summed as recurring needs.
+- Monthly free savings equals monthly income minus active needs.
+- Actual savings equals monthly income minus recorded monthly expenses.
+- Wants spending equals recorded expenses above the active needs total, never below zero.
+- Needs income ratio is the active needs total as a percentage of monthly income.
+
+Goal projection:
+- Progress is saved amount divided by target amount, capped at 100 percent.
+- Remaining amount is target amount minus saved amount, capped at zero.
+- Required months are remaining amount divided by monthly free savings.
+- If monthly free savings is zero or negative, required months are unavailable.
+- Target date distance is calculated in months.
+- A goal is achievable when required months are less than or equal to the time remaining.
+- A completion date is estimated by adding the required number of rounded-up months to the current date.
+- Projection labels include completed, on_track, at_risk, and blocked.
+
+Affordability:
+- Product price is divided by monthly free savings.
+- If free savings are zero or negative, the calculation reports that income must increase or spending must decrease.
+- The result also reports the approximate impact as a percentage of one month of free savings.
+
+Frontend behavior
+-----------------
+The main layout is in templates/base.html. Authentication pages are login.html and register.html. The dashboard is index.html, with planning markup in templates/partials/planning_section.html.
+
+static/js/planning.js:
+- Loads needs, goals, savings summary, and insights in parallel.
+- Maintains a small planningCache for current UI state.
+- Renders needs, goals, progress, free savings, and insights.
+- Shows the needs setup overlay for first-time users.
+- Supports asynchronous create, update, toggle, archive, and delete actions.
+- Uses browser fetch calls and displays errors through the dashboard alert system.
+
+static/style.css supplies the dark visual system, responsive layout, colors, borders, shadows, transitions, and component styling. The existing design uses deep slate backgrounds with green, red, blue, cyan, and purple accents.
+
+Excel export
+------------
+GET /export creates an XLSX workbook for the authenticated user's transactions.
+
+The generated worksheet is named Expenses and contains:
+- Date
+- Day
+- Time
+- Name
+- Category
+- Amount
+
+The export applies:
+- Bold white header text
+- Blue header fill
+- Centered header alignment
+- Thin cell borders
+- Date formatting
+- Time formatting
+- INR amount formatting
+- Automatic column width sizing
+
+Test coverage
+-------------
+The repository includes the following test and verification scripts:
+
+- test_dark_theme.py
+  Checks dark theme and core application behavior.
+- test_excel_export.py
+  Verifies the XLSX response, worksheet headers, date/day/time values, transaction fields, and amount formatting.
+- test_needs_goals.py
+  Exercises needs setup, need updates, personal goal creation, savings summaries, projections, affordability, insights, and legacy compatibility.
+- test_operations.py
+  Uses requests against a running local server to test registration, login, dashboard loading, transaction creation, income creation, savings goals, retrieval, and deletion.
+- test_time_support.py
+  Covers transaction time support and time-related behavior.
+- verify_db.py
+  Provides database verification utilities.
+- convert_dark_theme.py
+  Provides theme conversion support and is not itself a primary application test.
+
+Test execution notes:
+- Tests using app.test_client() can run without starting a web server.
+- test_operations.py communicates with http://127.0.0.1:5000 and therefore requires the application to be running.
+- Some tests write records to the local expenses.db file. Use a test database or reset test data when isolation is required.
+
+Typical setup
+-------------
+1. Open a terminal in the project directory.
+2. Create and activate a Python virtual environment.
+3. Install dependencies:
+
+       pip install -r requirements.txt
+
+4. Optionally create a .env file with:
+
+       SECRET_KEY=replace-with-a-long-random-secret
+       GOOGLE_CLIENT_ID=your-google-client-id
+       GOOGLE_CLIENT_SECRET=your-google-client-secret
+       OAUTH_REDIRECT_URI=http://127.0.0.1:5000/oauth2callback
+
+5. Start the application:
+
+       python app.py
+
+6. Open http://127.0.0.1:5000.
+7. Register, log in, add income and expenses, configure needs, and create a personal goal.
+
+Security and reliability observations
+-------------------------------------
+Implemented protections:
+- Password hashing with bcrypt
+- Session-based authentication
+- Parameterized SQL queries for user-provided values
+- User ownership checks before deleting expenses, needs, and goals
+- OAuth state validation
+- Input validation for dates, times, strings, amounts, priorities, and target dates
+- HTTP status codes for common error cases
+- Per-user filtering in transaction and planning queries
+
+Operational considerations:
+- The fallback SECRET_KEY in app.py should not be used in production.
+- Google OAuth secrets must be supplied through environment variables and should not be committed.
+- CORS is enabled with credential support; production deployments should restrict allowed origins instead of relying on a broad default.
+- The application uses SQLite, which is suitable for local and small deployments but may need a server database for higher concurrency.
+- Several broad exception handlers return database error text to clients; production deployments should log details privately and return less internal information.
+- CSRF protection is not visibly enforced by a Flask-WTF or equivalent middleware in the current dependency list.
+- The repository currently uses both legacy routes and planning routes, so API and UI behavior should be regression-tested together when modifying shared transaction logic.
+
+Known documentation mismatch
+----------------------------
+The older README.md and UPGRADE_SUMMARY.md describe a broader set of templates, including payments, import, category chart, and monthly trend pages. Those files are not present in the current workspace structure shown by the repository. The current source does contain stats.html, planning UI, and the export route. This PROJECT_SUMMARY.txt is intended to be the current source-aligned reference.
+
+Important project files
+-----------------------
+- app.py: Flask application, authentication, dashboard, transaction routes, export, and database initialization.
+- routes/api.py: planning and analysis REST API.
+- db/connection.py: SQLite connection helper.
+- db/migrations.py: repeatable feature schema migrations.
+- services/needs_service.py: needs CRUD and setup state.
+- services/goals_service.py: personal goals CRUD and projections.
+- services/savings_engine.py: financial snapshots, projections, and affordability calculations.
+- services/insights_service.py: generated financial insights.
+- utils/calculations.py: pure savings and date calculation helpers.
+- utils/validators.py: shared API validation helpers.
+- constants/default_needs.py: first-time needs templates.
+- templates/: Jinja pages and dashboard partials.
+- static/style.css: application visual styling.
+- static/js/planning.js: planning dashboard client logic.
+- requirements.txt: pinned Python dependencies.
+- test_*.py: functional and regression tests.
+
+Summary
+-------
+expweb is a personal finance web application built with Flask and SQLite. Its original purpose is straightforward income and expense tracking, but the current implementation also provides a planning layer that models recurring needs, personal goals, savings capacity, affordability, and financial insights. The project has a responsive dark dashboard, session-based authentication, JSON APIs, formatted Excel export, repeatable database migrations, and a growing automated test suite.
+
+The main development priority for future changes should be keeping the legacy transaction endpoints and the newer planning calculations consistent, while improving test isolation, production security configuration, and documentation alignment.

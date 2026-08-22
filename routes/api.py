@@ -17,6 +17,17 @@ from utils.validators import (
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
+DATE_FILTER_KEYS = (
+    "date_filter",
+    "filter_day",
+    "specific_date",
+    "filter_month_date",
+    "filter_quarter",
+    "filter_year_date",
+    "custom_start",
+    "custom_end",
+)
+
 
 def _get_db():
     from db.connection import get_db
@@ -39,6 +50,10 @@ def _payload():
     if not data and request.form:
         data = request.form.to_dict()
     return data
+
+
+def _date_filter_payload(data):
+    return {key: data[key] for key in DATE_FILTER_KEYS if key in data}
 
 
 def _error(message, status=400):
@@ -303,7 +318,7 @@ def personal_goals_list():
     status = request.args.get("status", "active")
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         if status == "all":
             goals = []
             for st in ("active", "archived", "completed"):
@@ -328,7 +343,7 @@ def personal_goal_detail(goal_id):
         return err
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         goal = goals_service.get_goal_with_projection(conn, goal_id, _user_id(), snapshot)
         if not goal:
             return _error("Goal not found", 404)
@@ -349,7 +364,7 @@ def personal_goal_create():
     conn = _get_db()
     try:
         goal = goals_service.create_goal(conn, _user_id(), parsed)
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         row = conn.execute(
             "SELECT * FROM personal_goals WHERE id = ?", (goal["id"],)
         ).fetchone()
@@ -405,7 +420,7 @@ def personal_goal_update(goal_id):
         goal, update_err = goals_service.update_goal(conn, goal_id, _user_id(), parsed)
         if update_err:
             return _error(update_err, 404)
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         row = conn.execute(
             "SELECT * FROM personal_goals WHERE id = ?", (goal_id,)
         ).fetchone()
@@ -457,7 +472,7 @@ def savings_summary():
         return err
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         rounded = {k: round(v, 2) if isinstance(v, float) else v for k, v in snapshot.items()}
         return _ok(summary=rounded)
     finally:
@@ -471,7 +486,7 @@ def savings_goal_projection(goal_id):
         return err
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         goal = goals_service.get_goal_with_projection(conn, goal_id, _user_id(), snapshot)
         if not goal:
             return _error("Goal not found", 404)
@@ -495,7 +510,9 @@ def affordability_calculate():
 
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(
+            conn, _user_id(), _date_filter_payload(data) or request.args
+        )
         result = calculate_affordability(name, price, snapshot)
         print(f"[AFFORDABILITY] OK User {_user_id()}: {name} price {price:.2f}")
         return _ok(affordability=result)
@@ -512,7 +529,7 @@ def insights_list():
         return err
     conn = _get_db()
     try:
-        snapshot = get_financial_snapshot(conn, _user_id())
+        snapshot = get_financial_snapshot(conn, _user_id(), request.args)
         goals = goals_service.list_goals_with_projections(
             conn, _user_id(), snapshot, status="active"
         )

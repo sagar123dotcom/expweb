@@ -10,6 +10,7 @@ import requests
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
+from utils.date_filters import build_date_conditions
 app = Flask(__name__)
 # Load environment variables
 from dotenv import load_dotenv
@@ -105,6 +106,48 @@ def format_transaction_datetime(date_value, time_value):
 
 def transaction_order_sql(direction="DESC"):
     return f"ORDER BY date {direction}, COALESCE(time, '00:00') {direction}, id {direction}"
+
+
+def build_transaction_filters(args, user_id):
+    conditions = ["user_id = ?"]
+    params = [user_id]
+
+    filter_category = args.get('category', '').strip()
+    filter_month = args.get('month', 'All')
+    filter_year = args.get('year', 'All')
+    filter_name = args.get('name', '').strip()
+
+    if filter_category and filter_category.lower() != "all":
+        conditions.append("LOWER(category) = ?")
+        params.append(filter_category.lower())
+
+    if filter_month != "All":
+        try:
+            month_number = int(filter_month)
+            if month_number < 1 or month_number > 12:
+                raise ValueError
+        except (TypeError, ValueError):
+            return [], [], "Month must be between 1 and 12"
+        conditions.append("strftime('%m', date) = ?")
+        params.append(f"{month_number:02d}")
+
+    if filter_year != "All":
+        if not str(filter_year).isdigit() or len(str(filter_year)) != 4:
+            return [], [], "Year must be in YYYY format"
+        conditions.append("strftime('%Y', date) = ?")
+        params.append(str(filter_year))
+
+    date_conditions, date_params, date_error = build_date_conditions(args)
+    if date_error:
+        return [], [], date_error
+    conditions.extend(date_conditions)
+    params.extend(date_params)
+
+    if filter_name:
+        conditions.append("LOWER(name) LIKE ?")
+        params.append(f"%{filter_name.lower()}%")
+
+    return conditions, params, None
 
 # ---------------------- DB Setup ----------------------
 def init_db():
@@ -312,35 +355,27 @@ def index():
     filter_year = request.args.get('year', 'All')
     filter_name = request.args.get('name', '').strip()
 
-    query = "SELECT * FROM expenses WHERE user_id = ?"
-    params = [session['user_id']]
+    conditions, params, filter_error = build_transaction_filters(
+        request.args, session['user_id']
+    )
+    if filter_error:
+        flash(filter_error, 'warning')
+        conditions, params = ["user_id = ?"], [session['user_id']]
 
-    if filter_category and filter_category.lower() != "all":
-        query += " AND LOWER(category) = ?"
-        params.append(filter_category.lower())
-
-    if filter_month != "All":
-        query += " AND strftime('%m', date) = ?"
-        params.append(f"{int(filter_month):02d}")
-
-    if filter_year != "All":
-        query += " AND strftime('%Y', date) = ?"
-        params.append(filter_year)
-
-    if filter_name:
-        query += " AND LOWER(name) LIKE ?"
-        params.append(f"%{filter_name.lower()}%")
+    query = "SELECT * FROM expenses WHERE " + " AND ".join(conditions)
 
     query += " ORDER BY date DESC, COALESCE(time, '00:00') DESC"
 
-    if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name):
+    if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name or request.args.get('date_filter')):
         query += " LIMIT 5"
 
     expenses = conn.execute(query, params).fetchall()
 
     all_transactions = conn.execute(
-        "SELECT id, category, amount, time, date FROM expenses WHERE user_id = ? ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
-        (session['user_id'],)
+        "SELECT id, category, amount, time, date FROM expenses WHERE "
+        + " AND ".join(conditions)
+        + " ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
+        params
     ).fetchall()
 
     running_balance_by_id = {}
@@ -361,12 +396,12 @@ def index():
         expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
 
     total_income = sum(e['amount'] for e in conn.execute(
-        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) = 'income'",
-        (session['user_id'],)
+        "SELECT amount FROM expenses WHERE " + " AND ".join(conditions)
+        + " AND LOWER(category) = 'income'", params
     ))
     total_expense = sum(e['amount'] for e in conn.execute(
-        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) != 'income'",
-        (session['user_id'],)
+        "SELECT amount FROM expenses WHERE " + " AND ".join(conditions)
+        + " AND LOWER(category) != 'income'", params
     ))
     balance = total_income - total_expense
 
@@ -566,35 +601,26 @@ def get_expenses():
     filter_year = request.args.get('year', 'All')
     filter_name = request.args.get('name', '').strip()
     
-    query = "SELECT * FROM expenses WHERE user_id = ?"
-    params = [session['user_id']]
-    
-    if filter_category and filter_category.lower() != "all":
-        query += " AND LOWER(category) = ?"
-        params.append(filter_category.lower())
-    
-    if filter_month != "All":
-        query += " AND strftime('%m', date) = ?"
-        params.append(f"{int(filter_month):02d}")
-    
-    if filter_year != "All":
-        query += " AND strftime('%Y', date) = ?"
-        params.append(filter_year)
-    
-    if filter_name:
-        query += " AND LOWER(name) LIKE ?"
-        params.append(f"%{filter_name.lower()}%")
+    conditions, params, filter_error = build_transaction_filters(
+        request.args, session['user_id']
+    )
+    if filter_error:
+        return jsonify({"error": filter_error, "success": False}), 400
+
+    query = "SELECT * FROM expenses WHERE " + " AND ".join(conditions)
     
     query += " ORDER BY date DESC, COALESCE(time, '00:00') DESC"
     
-    if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name):
+    if not (filter_category or filter_month != "All" or filter_year != "All" or filter_name or request.args.get('date_filter')):
         query += " LIMIT 5"
     
     expenses = conn.execute(query, params).fetchall()
 
     all_transactions = conn.execute(
-        "SELECT id, category, amount, time, date FROM expenses WHERE user_id = ? ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
-        (session['user_id'],)
+        "SELECT id, category, amount, time, date FROM expenses WHERE "
+        + " AND ".join(conditions)
+        + " ORDER BY date ASC, COALESCE(time, '00:00') ASC, id ASC",
+        params
     ).fetchall()
 
     running_balance_by_id = {}
@@ -615,12 +641,12 @@ def get_expenses():
         expense['running_balance'] = running_balance_by_id.get(expense['id'], 0.0)
     
     total_income = sum(e['amount'] for e in conn.execute(
-        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) = 'income'",
-        (session['user_id'],)
+        "SELECT amount FROM expenses WHERE " + " AND ".join(conditions)
+        + " AND LOWER(category) = 'income'", params
     ))
     total_expense = sum(e['amount'] for e in conn.execute(
-        "SELECT amount FROM expenses WHERE user_id = ? AND LOWER(category) != 'income'",
-        (session['user_id'],)
+        "SELECT amount FROM expenses WHERE " + " AND ".join(conditions)
+        + " AND LOWER(category) != 'income'", params
     ))
     balance = total_income - total_expense
     

@@ -9,6 +9,8 @@ let planningCache = {
   selectedGoalId: null,
 };
 
+let activeDashboardFilters = new URLSearchParams();
+
 function formatRupee(amount) {
   return '₹' + parseFloat(amount || 0).toFixed(2);
 }
@@ -22,13 +24,16 @@ async function apiFetch(url, options = {}) {
   return data;
 }
 
-async function loadPlanningDashboard() {
+async function loadPlanningDashboard(filters = new URLSearchParams()) {
   try {
+    const query = new URLSearchParams(filters);
+    activeDashboardFilters = new URLSearchParams(query);
+    const queryString = query.toString();
     const [needsRes, goalsRes, summaryRes, insightsRes] = await Promise.all([
       apiFetch('/api/needs'),
-      apiFetch('/api/personal-goals?status=active'),
-      apiFetch('/api/savings/summary'),
-      apiFetch('/api/insights'),
+      apiFetch('/api/personal-goals?status=active' + (queryString ? '&' + queryString : '')),
+      apiFetch('/api/savings/summary' + (queryString ? '?' + queryString : '')),
+      apiFetch('/api/insights' + (queryString ? '?' + queryString : '')),
     ]);
 
     planningCache.needs = needsRes.needs || [];
@@ -388,7 +393,6 @@ async function deletePersonalGoal(id) {
     showAlert('Error: ' + e.message, 'danger');
   }
 }
-
 async function calculateAffordability() {
   const product_name = document.getElementById('affordProductName')?.value?.trim();
   const product_price = document.getElementById('affordProductPrice')?.value;
@@ -397,10 +401,11 @@ async function calculateAffordability() {
     return;
   }
   try {
+    const filters = Object.fromEntries(activeDashboardFilters.entries());
     const data = await apiFetch('/api/affordability/calculate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_name, product_price }),
+      body: JSON.stringify({ product_name, product_price, ...filters }),
     });
     if (data.success && data.affordability) {
       const a = data.affordability;
